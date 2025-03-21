@@ -1,0 +1,19 @@
+{
+  "name": "taskmanagerwebapp",
+  "version": "1.0.0",
+  "description": "The Task Manager Web App is a system designed for managing tasks efficiently within an organization. It supports user roles, authentication, task creation, assignment, and workflow management, with optional enhancements for advanced functionality.",
+  "main": "index.js",
+  "scripts": {
+    "start": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd backend && node index.js",
+    "client": "cd task-manager-frontend && set PORT=3001 && npm start",
+    "dev": "concurrently \"cd backend && nodemon index.js\" \"cd task-manager-frontend && set PORT=3001 && npm start\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
