@@ -121,6 +121,21 @@ export const updateProfile = (userData, token) => api.patch('/users/me',
   }
 );
 
+// Request password reset
+export const requestPasswordReset = (email) => {
+  return api.post('/users/reset-password-request', { email });
+};
+
+// Verify reset token
+export const verifyResetToken = (token) => {
+  return api.get(`/users/verify-reset-token/${token}`);
+};
+
+// Reset password with token
+export const resetPassword = (token, password) => {
+  return api.post('/users/reset-password', { token, password });
+};
+
 // Error interceptor
 api.interceptors.response.use(
   response => response,

@@ -16,6 +16,8 @@ import AdminUsersPage from './pages/AdminUsersPage';
 import AdminTasksPage from './pages/AdminTasksPage';
 import PendingApprovalPage from './pages/PendingApprovalPage';
 import RegistrationDeclinedPage from './pages/RegistrationDeclinedPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 // Context
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -62,6 +64,8 @@ const AppContent = () => {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/pending-approval" element={<PendingApprovalPage />} />
           <Route path="/registration-declined" element={<RegistrationDeclinedPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
           
           {/* Protected routes */}
           <Route 

@@ -8,6 +8,8 @@ const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const { sendPasswordResetEmail } = require('./utils/emailService');
 const Task = require('./models/Task'); // Import the Task model
 const User = require('./models/User'); // Import the User model
 const { auth, adminAuth } = require('./middleware/auth'); // Import the auth and adminAuth middleware
@@ -518,6 +520,157 @@ app.patch('/users/me/password', auth, async (req, res) => {
   } catch (error) {
     console.error('Password update error:', error);
     res.status(400).send({ error: 'Failed to update password' });
+  }
+});
+
+/**
+ * @swagger
+ * /users/reset-password-request:
+ *   post:
+ *     summary: Request password reset
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password reset email sent
+ *       404:
+ *         description: Email not found
+ */
+app.post('/users/reset-password-request', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    // Validate email format (icterra.com domain)
+    const companyEmailRegex = /^[a-zA-Z0-9.]+@icterra\.com$/;
+    if (!companyEmailRegex.test(email)) {
+      return res.status(400).send({ error: 'Invalid email format' });
+    }
+    
+    // Find user with this email
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).send({ error: 'No account with that email address exists' });
+    }
+    
+    // Generate random token
+    const resetToken = crypto.randomBytes(20).toString('hex');
+    
+    // Set token and expiration on user model
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour from now
+    await user.save();
+    
+    // Send the password reset email
+    await sendPasswordResetEmail(email, resetToken);
+    
+    res.send({ message: 'Password reset email sent' });
+  } catch (error) {
+    console.error('Password reset request error:', error);
+    res.status(500).send({ error: 'Error processing password reset request' });
+  }
+});
+
+/**
+ * @swagger
+ * /users/verify-reset-token/{token}:
+ *   get:
+ *     summary: Verify reset token
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Token is valid
+ *       400:
+ *         description: Invalid or expired token
+ */
+app.get('/users/verify-reset-token/:token', async (req, res) => {
+  try {
+    const user = await User.findOne({
+      resetPasswordToken: req.params.token,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+    
+    if (!user) {
+      return res.status(400).send({ error: 'Password reset token is invalid or has expired' });
+    }
+    
+    res.send({ email: user.email });
+  } catch (error) {
+    console.error('Verify reset token error:', error);
+    res.status(500).send({ error: 'Error verifying reset token' });
+  }
+});
+
+/**
+ * @swagger
+ * /users/reset-password:
+ *   post:
+ *     summary: Reset password with token
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *               - password
+ *             properties:
+ *               token:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password has been reset
+ *       400:
+ *         description: Invalid or expired token
+ */
+app.post('/users/reset-password', async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    
+    // Validate password
+    if (!password || password.length < 7) {
+      return res.status(400).send({ error: 'Password must be at least 7 characters long' });
+    }
+    
+    // Find user with this token
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+    
+    if (!user) {
+      return res.status(400).send({ error: 'Password reset token is invalid or has expired' });
+    }
+    
+    // Update user password
+    user.password = password; // Your model should hash this in a pre-save hook
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+    
+    res.send({ message: 'Password has been reset successfully' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).send({ error: 'Error resetting password' });
   }
 });
 
