@@ -17,6 +17,7 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import InfoIcon from '@mui/icons-material/Info';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { registerUser } from '../api';
+import useDocumentTitle from '../hooks/useDocumentTitle';
 
 // Add this function to validate email format
 const validateEmail = (email) => {
@@ -25,6 +26,7 @@ const validateEmail = (email) => {
 };
 
 const Register = () => {
+  useDocumentTitle('Sign Up');
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',

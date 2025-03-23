@@ -6,8 +6,10 @@ import {
 import LockResetIcon from '@mui/icons-material/LockReset';
 import { Link as RouterLink } from 'react-router-dom';
 import { requestPasswordReset } from '../api';
+import useDocumentTitle from '../hooks/useDocumentTitle';
 
 const ForgotPasswordPage = () => {
+  useDocumentTitle('Forgot Password');
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

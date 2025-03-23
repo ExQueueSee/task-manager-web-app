@@ -19,8 +19,10 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { loginUser } from '../api';
 import { useAuth } from '../context/AuthContext';
+import useDocumentTitle from '../hooks/useDocumentTitle';
 
 const Login = () => {
+  useDocumentTitle(null); // Will use just "Task Manager"
   const { login, setPendingApproval, setDeclinedApproval } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

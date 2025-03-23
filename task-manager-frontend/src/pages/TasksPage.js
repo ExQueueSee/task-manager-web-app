@@ -35,6 +35,7 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import PersonIcon from '@mui/icons-material/Person';
 import { useSnackbar } from 'notistack';
 import { format } from 'date-fns';
+import useDocumentTitle from '../hooks/useDocumentTitle.js';
 
 import { getTasks, createTask, updateTask, deleteTask, assignTask, getAllUsers } from '../api';
 import { useAuth } from '../context/AuthContext';
@@ -59,6 +60,7 @@ const statusLabels = {
 };
 
 const TasksPage = () => {
+  useDocumentTitle('Tasks');
   const { token, isAdmin, user } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
   

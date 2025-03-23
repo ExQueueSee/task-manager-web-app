@@ -2,8 +2,10 @@ import React from 'react';
 import { Box, Typography, Paper, Button } from '@mui/material';
 import BlockIcon from '@mui/icons-material/Block';
 import { useAuth } from '../context/AuthContext';
+import useDocumentTitle from '../hooks/useDocumentTitle';
 
 const RegistrationDeclinedPage = () => {
+  useDocumentTitle('403 Forbidden');
   const { clearApprovalStatus } = useAuth();
 
   const handleBackToLogin = () => {

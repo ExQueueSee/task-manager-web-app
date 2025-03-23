@@ -2,8 +2,10 @@ import React from 'react';
 import { Box, Typography, Paper, Button } from '@mui/material';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import { useAuth } from '../context/AuthContext';
+import useDocumentTitle from '../hooks/useDocumentTitle';
 
 const PendingApprovalPage = () => {
+  useDocumentTitle('Approval Pending');
   const { clearApprovalStatus } = useAuth();
 
   const handleBackToLogin = () => {

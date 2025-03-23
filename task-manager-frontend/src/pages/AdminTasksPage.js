@@ -14,7 +14,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSnackbar } from 'notistack';
 import { getAllTasks, updateTask, deleteTask, getAllUsers } from '../api';
 import { STATUS_LABELS, STATUS_COLORS, STATUS_HEX_COLORS } from '../constants/TaskConstants.js';
-
+import useDocumentTitle from '../hooks/useDocumentTitle.js';
 const statusColors = {
   'pending': 'info', // Blue
   'in-progress': 'warning', // Orange/amber
@@ -32,6 +32,7 @@ const statusLabels = {
 };
 
 const AdminTasksPage = () => {
+  useDocumentTitle('Manage Tasks');
   const { token } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
   const [tasks, setTasks] = useState([]);

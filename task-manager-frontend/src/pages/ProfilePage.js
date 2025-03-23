@@ -15,6 +15,7 @@ import { styled } from '@mui/material/styles';
 import { useAuth } from '../context/AuthContext';
 import { useSnackbar } from 'notistack';
 import { updateProfile, updatePassword } from '../api';
+import useDocumentTitle from '../hooks/useDocumentTitle';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(4),
@@ -32,6 +33,8 @@ const ProfileAvatar = styled(Avatar)(({ theme }) => ({
 }));
 
 const ProfilePage = () => {
+  useDocumentTitle('Profile');
+  
   const { user, token, setToken, setUser } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
   const [formData, setFormData] = useState({

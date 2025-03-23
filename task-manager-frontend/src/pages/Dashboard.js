@@ -23,8 +23,11 @@ import {
 import { getTasks } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { format } from 'date-fns';
+import useDocumentTitle from '../hooks/useDocumentTitle';
 
 const Dashboard = () => {
+  useDocumentTitle('Dashboard');
+  
   const { token, user } = useAuth();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);

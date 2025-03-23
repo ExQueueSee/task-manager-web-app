@@ -2,8 +2,10 @@ import React from 'react';
 import { Box, Button, Typography, Container } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import useDocumentTitle from '../hooks/useDocumentTitle';
 
 const NotFoundPage = () => {
+  useDocumentTitle('404 Not Found');
   return (
     <Container maxWidth="md">
       <Box

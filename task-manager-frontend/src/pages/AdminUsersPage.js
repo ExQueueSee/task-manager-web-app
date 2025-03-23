@@ -14,8 +14,10 @@ import { updateUserApproval } from '../api';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
+import useDocumentTitle from '../hooks/useDocumentTitle';
 
 const AdminUsersPage = () => {
+  useDocumentTitle('Users');
   const { token } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
   const [users, setUsers] = useState([]);

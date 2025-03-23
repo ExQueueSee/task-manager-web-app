@@ -6,8 +6,10 @@ import {
 import LockIcon from '@mui/icons-material/Lock';
 import { Link as RouterLink, useParams, useNavigate } from 'react-router-dom';
 import { verifyResetToken, resetPassword } from '../api';
+import useDocumentTitle from '../hooks/useDocumentTitle';
 
 const ResetPasswordPage = () => {
+  useDocumentTitle('Reset Password');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
