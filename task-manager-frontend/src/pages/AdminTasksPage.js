@@ -205,7 +205,22 @@ const AdminTasksPage = () => {
   };
 
   return (
-    <Paper sx={{ p: 3 }}>
+    <Paper 
+      sx={{ 
+        p: 3,
+        borderRadius: 2,
+        backdropFilter: 'blur(10px)',
+        backgroundColor: (theme) => 
+          theme.palette.mode === 'dark' 
+            ? 'rgba(18, 18, 18, 0.8)' 
+            : 'rgba(255, 255, 255, 0.9)',
+        boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.1)',
+        transition: 'transform 0.3s ease-in-out',
+        '&:hover': {
+          transform: 'translateY(-5px)'
+        }
+      }}
+    >
       <Typography variant="h4" component="h1" gutterBottom>
         Task Management
       </Typography>
@@ -213,13 +228,53 @@ const AdminTasksPage = () => {
       <Button 
         variant="contained" 
         color="primary" 
-        sx={{ mb: 3 }}
+        sx={{ 
+          mb: 3,
+          px: 3,
+          py: 1,
+          borderRadius: '12px',
+          background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+          boxShadow: '0 5px 15px rgba(33, 150, 243, 0.3)',
+          '&:hover': {
+            boxShadow: '0 8px 25px rgba(33, 150, 243, 0.4)',
+            transform: 'translateY(-2px)'
+          },
+          transition: 'all 0.3s ease'
+        }}
         onClick={handleCreateDialogOpen}
       >
         Create New Task
       </Button>
       
-      <TableContainer>
+      <TableContainer
+        sx={{
+          borderRadius: 1,
+          overflow: 'hidden',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
+          '& .MuiTableHead-root': {
+            backgroundColor: (theme) => 
+              theme.palette.mode === 'dark' 
+                ? 'rgba(30, 30, 30, 0.8)' 
+                : theme.palette.primary.light,
+            '& .MuiTableCell-head': {
+              color: (theme) => 
+                theme.palette.mode === 'dark' 
+                  ? theme.palette.common.white 
+                  : theme.palette.primary.contrastText,
+              fontWeight: 600
+            }
+          },
+          '& .MuiTableRow-root': {
+            transition: 'background-color 0.2s',
+            '&:hover': {
+              backgroundColor: (theme) => 
+                theme.palette.mode === 'dark' 
+                  ? 'rgba(255, 255, 255, 0.05)' 
+                  : 'rgba(0, 0, 0, 0.02)'
+            }
+          }
+        }}
+      >
         <Table>
           <TableHead>
             <TableRow>
@@ -269,19 +324,44 @@ const AdminTasksPage = () => {
                   {task.dueDate ? new Date(task.dueDate).toLocaleString() : 'No due date'}
                 </TableCell>
                 <TableCell>
-                  <IconButton size="small" onClick={() => handleEditClick(task)}>
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton size="small" onClick={() => handleAssignClick(task)}>
-                    <AssignIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton 
-                    size="small" 
-                    color="error" 
-                    onClick={() => handleDeleteTask(task._id)}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <IconButton 
+                      size="small" 
+                      sx={{ 
+                        bgcolor: 'primary.light', 
+                        color: 'primary.contrastText',
+                        '&:hover': { transform: 'scale(1.1)' },
+                        transition: 'transform 0.2s'
+                      }}
+                      onClick={() => handleEditClick(task)}
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton 
+                      size="small"
+                      sx={{ 
+                        bgcolor: 'secondary.light', 
+                        color: 'secondary.contrastText',
+                        '&:hover': { transform: 'scale(1.1)' },
+                        transition: 'transform 0.2s'
+                      }}
+                      onClick={() => handleAssignClick(task)}
+                    >
+                      <AssignIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton 
+                      size="small"
+                      sx={{ 
+                        bgcolor: 'error.light', 
+                        color: 'error.contrastText',
+                        '&:hover': { transform: 'scale(1.1)' },
+                        transition: 'transform 0.2s'
+                      }}
+                      onClick={() => handleDeleteTask(task._id)}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
                 </TableCell>
               </TableRow>
             ))}

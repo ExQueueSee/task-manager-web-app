@@ -308,7 +308,51 @@ const TasksPage = () => {
         <Grid container spacing={3}>
           {filteredTasks.map(task => (
             <Grid item xs={12} sm={6} md={4} key={task._id}>
-              <Card variant="outlined" sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <Card 
+                variant="outlined" 
+                sx={{ 
+                  height: '100%', 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  position: 'relative',
+                  overflow: 'visible',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: 'inherit',
+                    boxShadow: '0 10px 30px -15px rgba(0, 0, 0, 0.15)',
+                    opacity: 0,
+                    transition: 'opacity 0.3s ease',
+                  },
+                  '&:hover': {
+                    transform: 'translateY(-5px)',
+                    '&::before': {
+                      opacity: 1,
+                    },
+                  },
+                  transition: 'transform 0.3s ease',
+                }}
+              >
+                {/* Add this before the CardContent for a colored top border based on status */}
+                <Box 
+                  sx={{ 
+                    height: '5px', 
+                    width: '100%', 
+                    backgroundColor: 
+                      task.status === 'completed' ? '#4caf50' : 
+                      task.status === 'in-progress' ? '#ff9800' : 
+                      task.status === 'behind-schedule' ? '#9b59b6' :
+                      task.status === 'cancelled' ? '#f44336' : 
+                      '#2196f3',
+                    borderTopLeftRadius: 'inherit',
+                    borderTopRightRadius: 'inherit',
+                  }} 
+                />
+                
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                     <Typography variant="h6" component="div" noWrap>

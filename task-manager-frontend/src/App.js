@@ -18,10 +18,12 @@ import PendingApprovalPage from './pages/PendingApprovalPage';
 import RegistrationDeclinedPage from './pages/RegistrationDeclinedPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import GlobalBackground from './components/GlobalBackground';
+import BrandLogo from './components/BrandLogo';
 
 // Context
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { ColorModeProvider, useColorMode } from './context/ColorModeContext';
+import { ColorModeProvider} from './context/ColorModeContext';
 
 // Components
 import Layout from './components/Layout/Layout';
@@ -29,19 +31,78 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 const AppContent = () => {
   const { token, user, approvalStatus, clearApprovalStatus } = useAuth();
-  const { mode } = useColorMode();
-  
+
   const theme = useMemo(() => createTheme({
     palette: {
-      mode,
+      mode: 'dark', // Always dark instead of using the mode variable
       primary: {
         main: '#2196f3',
       },
       secondary: {
         main: '#ff9800',
       },
+      background: {
+        default: '#121212', // Dark background
+        paper: '#1e1e1e', // Dark paper
+      },
     },
-  }), [mode]);
+    typography: {
+      fontFamily: '"Poppins", "Roboto", "Helvetica", "Arial", sans-serif',
+      h4: {
+        fontWeight: 600,
+      },
+      h6: {
+        fontWeight: 500,
+      },
+    },
+    shape: {
+      borderRadius: 8,
+    },
+    components: {
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            borderRadius: 6,
+            textTransform: 'none',
+            fontWeight: 500,
+            boxShadow: 'none',
+            ':hover': {
+              boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
+            },
+          },
+          contained: {
+            ':hover': {
+              boxShadow: '0 6px 15px rgba(33, 150, 243, 0.2)',
+            },
+          },
+        },
+      },
+      MuiPaper: {
+        styleOverrides: {
+          elevation1: {
+            boxShadow: '0 2px 12px rgba(0, 0, 0, 0.07)',
+          },
+          elevation2: {
+            boxShadow: '0 2px 14px rgba(0, 0, 0, 0.1)',
+          },
+          elevation3: {
+            boxShadow: '0 3px 16px rgba(0, 0, 0, 0.1)',
+          },
+        },
+      },
+      MuiCard: {
+        styleOverrides: {
+          root: {
+            transition: 'transform 0.2s, box-shadow 0.2s',
+            ':hover': {
+              transform: 'translateY(-4px)',
+              boxShadow: '0 8px 20px rgba(0, 0, 0, 0.1)',
+            },
+          },
+        },
+      },
+    },
+  }), []); // No dependencies since we don't change the mode anymore
 
   // Handle direct navigation to paths other than approval pages
   useEffect(() => {
@@ -57,6 +118,9 @@ const AppContent = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <GlobalBackground />
+      {/* Only show the bottom logo on auth pages */}
+      {!token && <BrandLogo />}
       <BrowserRouter>
         <Routes>
           {/* Public routes */}

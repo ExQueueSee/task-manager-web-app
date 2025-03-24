@@ -6,8 +6,6 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import TaskIcon from '@mui/icons-material/Task';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import Brightness4Icon from '@mui/icons-material/Brightness4';
-import Brightness7Icon from '@mui/icons-material/Brightness7';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PeopleIcon from '@mui/icons-material/People';
 import AssignmentIcon from '@mui/icons-material/Assignment';
@@ -15,7 +13,6 @@ import { styled } from '@mui/material/styles';
 
 import NavItem from './NavItem';
 import { useAuth } from '../../context/AuthContext';
-import { useColorMode } from '../../context/ColorModeContext';
 
 const drawerWidth = 240;
 
@@ -27,6 +24,11 @@ const AppBarStyled = styled(AppBar, {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
+  backdropFilter: 'blur(10px)',
+  backgroundColor: theme.palette.mode === 'dark' 
+    ? 'rgba(18, 18, 18, 0.8)' 
+    : 'rgba(255, 255, 255, 0.8)',
+  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
   ...(open && {
     marginLeft: drawerWidth,
     width: `calc(100% - ${drawerWidth}px)`,
@@ -43,6 +45,11 @@ const DrawerStyled = styled(Drawer, { shouldForwardProp: (prop) => prop !== 'ope
       position: 'relative',
       whiteSpace: 'nowrap',
       width: drawerWidth,
+      backgroundColor: theme.palette.mode === 'dark' 
+        ? 'rgba(30, 30, 30, 0.9)' 
+        : 'rgba(255, 255, 255, 0.9)',
+      backdropFilter: 'blur(10px)',
+      boxShadow: '2px 0 20px rgba(0, 0, 0, 0.05)',
       transition: theme.transitions.create('width', {
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.enteringScreen,
@@ -63,10 +70,19 @@ const DrawerStyled = styled(Drawer, { shouldForwardProp: (prop) => prop !== 'ope
   }),
 );
 
+const LogoText = styled(Typography)(({ theme }) => ({
+  fontFamily: '"Montserrat", sans-serif',
+  fontWeight: 700,
+  background: 'linear-gradient(90deg, #2196f3 0%, #3f51b5 100%)',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  letterSpacing: '0.5px',
+}));
+
 const Layout = () => {
   const [open, setOpen] = useState(true);
   const { user, logout } = useAuth();
-  const { mode, toggleColorMode } = useColorMode();
+
 
   const toggleDrawer = () => {
     setOpen(!open);
@@ -92,18 +108,43 @@ const Layout = () => {
           >
             <MenuIcon />
           </IconButton>
-          <Typography
+          
+          {/* Add the logo here */}
+          <Box
+            component="a"
+            href="https://www.icterra.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              textDecoration: 'none',
+            }}
+          >
+            <Box
+              component="img"
+              src="/images/ICTERRA_logo_04.svg"
+              alt="ICTerra Logo"
+              sx={{
+                height: 30,
+                mr: 2,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'scale(1.05)',
+                }
+              }}
+            />
+          </Box>
+          
+          <LogoText
             component="h1"
-            variant="h6"
+            variant="h5"
             color="inherit"
             noWrap
             sx={{ flexGrow: 1 }}
           >
             Task Manager
-          </Typography>
-          <IconButton color="inherit" onClick={toggleColorMode}>
-            {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
-          </IconButton>
+          </LogoText>
           <IconButton color="inherit" onClick={logout}>
             <LogoutIcon />
           </IconButton>
@@ -157,11 +198,13 @@ const Layout = () => {
         sx={{
           backgroundColor: (theme) =>
             theme.palette.mode === 'light'
-              ? theme.palette.grey[100]
-              : theme.palette.grey[900],
+              ? 'rgba(245, 247, 250, 0.7)' // Semi-transparent background
+              : 'rgba(18, 18, 18, 0.7)',    // Semi-transparent dark background
           flexGrow: 1,
           height: '100vh',
           overflow: 'auto',
+          position: 'relative', // Create a new stacking context
+          zIndex: 1,            // Ensure it's above the background but below fixed elements
         }}
       >
         <Toolbar />
