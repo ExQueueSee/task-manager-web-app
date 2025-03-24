@@ -6,66 +6,89 @@ const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  // Initialize state from localStorage
-  const [token, setToken] = useState(localStorage.getItem('token') || null);
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
-  const [loading, setLoading] = useState(true);
-  const [approvalStatus, setApprovalStatus] = useState(localStorage.getItem('approvalStatus') || null);
-
-  const logout = () => {
-    setToken('');
-    setUser(null);
-    localStorage.removeItem('token');
+  // Check both localStorage and sessionStorage on initial load
+  const getStoredToken = () => {
+    return localStorage.getItem('token') || sessionStorage.getItem('token') || null;
   };
+  
+  const getStoredUser = () => {
+    const userFromLocal = localStorage.getItem('user');
+    const userFromSession = sessionStorage.getItem('user');
+    return userFromLocal ? JSON.parse(userFromLocal) : 
+           userFromSession ? JSON.parse(userFromSession) : null;
+  };
+  
+  const [token, setToken] = useState(getStoredToken());
+  const [user, setUser] = useState(getStoredUser());
+  const [loading, setLoading] = useState(true);
+  const [approvalStatus, setApprovalStatus] = useState(
+    localStorage.getItem('approvalStatus') || sessionStorage.getItem('approvalStatus') || null
+  );
 
-  // Update login to reset approval status
-  const login = (token, user) => {
+  // Login with remember me option
+  const login = (token, user, rememberMe = false) => {
     setToken(token);
     setUser(user);
-    setApprovalStatus(null); // Reset approval status
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
-    localStorage.removeItem('approvalStatus'); // Clear approval status
-  };
-
-  // Clear approval status function
-  const clearApprovalStatus = () => {
-    // Remove from localStorage first
-    localStorage.removeItem('approvalStatus');
-    // Then update state
-    setApprovalStatus(null);
-  };
-
-  // Update approval status functions to persist to localStorage
-  const setPendingApproval = (value = 'pending') => {
-    if (value === null) {
-      clearApprovalStatus();
-      return;
-    }
     
-    localStorage.setItem('approvalStatus', 'pending');
-    setApprovalStatus('pending');
-    // Clear auth data
+    console.log('Login with remember me:', rememberMe); // Add logging
+    
+    // Clear both storages first to avoid any issues
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
+    
+    // Then store in the appropriate storage
+    if (rememberMe) {
+      console.log('Storing in localStorage'); // Add logging
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+    } else {
+      console.log('Storing in sessionStorage'); // Add logging
+      sessionStorage.setItem('token', token);
+      sessionStorage.setItem('user', JSON.stringify(user));
+    }
+    setApprovalStatus(null); // Reset approval status
+    localStorage.removeItem('approvalStatus'); // Clear approval status
+    sessionStorage.removeItem('approvalStatus'); // Clear approval status
+  };
+
+  // Logout function - clear both storages
+  const logout = () => {
     setToken(null);
     setUser(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
+  };
+
+  // Approval status functions
+  const setPendingApproval = () => {
+    setApprovalStatus('pending');
+    sessionStorage.setItem('approvalStatus', 'pending');
+    localStorage.setItem('approvalStatus', 'pending');
+    // Clear auth data
+    logout();
   };
 
   const setDeclinedApproval = () => {
-    localStorage.setItem('approvalStatus', 'declined');
     setApprovalStatus('declined');
+    sessionStorage.setItem('approvalStatus', 'declined');
+    localStorage.setItem('approvalStatus', 'declined');
     // Clear auth data
-    setToken(null);
-    setUser(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    logout();
+  };
+
+  const clearApprovalStatus = () => {
+    setApprovalStatus(null);
+    localStorage.removeItem('approvalStatus');
+    sessionStorage.removeItem('approvalStatus');
   };
 
   useEffect(() => {
     if (token) {
-      localStorage.setItem('token', token);
-      getUserProfile(token)
+      getUserProfile()  // Don't pass token, let interceptor handle it
         .then(response => {
           setUser(response.data);
         })
@@ -80,6 +103,34 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   }, [token]);
+
+  // Add this useEffect to validate token on page load
+  useEffect(() => {
+    const validateToken = async () => {
+      // If we're in a new browser session, only check localStorage
+      // (sessionStorage would be empty in a new session)
+      const isNewSession = !sessionStorage.getItem('token');
+      
+      // If this is a new session and remember me wasn't checked (no localStorage token)
+      // then we shouldn't try to auto login
+      if (isNewSession && !localStorage.getItem('token')) {
+        return;
+      }
+      
+      try {
+        // Try to fetch the user profile to verify token validity
+        const response = await getUserProfile();
+        setUser(response.data);
+        console.log('Token is valid');
+      } catch (error) {
+        console.log('Invalid token, clearing storage');
+        // If token is invalid, clear storage
+        logout();
+      }
+    };
+    
+    validateToken();
+  }, []); // Run only on component mount
 
   return (
     <AuthContext.Provider value={{ 

@@ -28,6 +28,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -37,7 +38,8 @@ const Login = () => {
     
     try {
         const response = await loginUser(email, password);
-        login(response.data.token, response.data.user);
+        console.log('Remember me checked:', rememberMe); // Add logging
+        login(response.data.token, response.data.user, rememberMe);
         navigate('/');
     } catch (error) {
         console.error('Login error:', error);
@@ -123,7 +125,14 @@ const Login = () => {
             onChange={(e) => setPassword(e.target.value)}
           />
           <FormControlLabel
-            control={<Checkbox value="remember" color="primary" />}
+            control={
+              <Checkbox 
+                value="remember" 
+                color="primary" 
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
+            }
             label="Remember me"
           />
           <Button

@@ -6,63 +6,64 @@ const api = axios.create({
   baseURL: API_URL,
 });
 
+// In api.js
+api.interceptors.request.use(
+  config => {
+    // Check both localStorage and sessionStorage
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  error => Promise.reject(error)
+);
+
+api.interceptors.response.use(
+  response => response,
+  error => {
+    // Handle token expiration
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
+      localStorage.removeItem('user');
+      sessionStorage.removeItem('user');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+
+
 // Authentication endpoints
 export const registerUser = (userData) => api.post('/users', userData);
 export const loginUser = (email, password) => {
   // Make sure you're sending the correct data structure
   return api.post('/users/login', { email, password });
 };
-export const getUserProfile = (token) => api.get('/users/me', {
-  headers: {
-    Authorization: `Bearer ${token}`
-  }
-});
+export const getUserProfile = () => {
+  // Don't add authorization headers here - let the interceptor handle it
+  return api.get('/users/me');
+};
 
 // Task endpoints
-export const getTasks = (token) => api.get('/tasks', {
-  headers: {
-    Authorization: `Bearer ${token}`
-  }
-});
+export const getTasks = () => api.get('/tasks');
 
-export const getTaskById = (taskId, token) => api.get(`/tasks/${taskId}`, {
-  headers: {
-    Authorization: `Bearer ${token}`
-  }
-});
+export const getTaskById = (taskId) => api.get(`/tasks/${taskId}`);
 
-export const createTask = (taskData, token) => api.post('/tasks', taskData, {
-  headers: {
-    Authorization: `Bearer ${token}`
-  }
-});
+export const createTask = (taskData) => api.post('/tasks', taskData);
 
-export const updateTask = (taskId, taskData, token) => api.patch(`/tasks/${taskId}`, taskData, {
-  headers: {
-    Authorization: `Bearer ${token}`
-  }
-});
+export const updateTask = (taskId, taskData) => api.patch(`/tasks/${taskId}`, taskData);
 
-export const deleteTask = (taskId, token) => api.delete(`/tasks/${taskId}`, {
-  headers: {
-    Authorization: `Bearer ${token}`
-  }
-});
+export const deleteTask = (taskId) => api.delete(`/tasks/${taskId}`);
 
 // Add these admin-specific functions
 
 // Admin endpoints
-export const getAllUsers = (token) => api.get('/users', {
-  headers: {
-    Authorization: `Bearer ${token}`
-  }
-});
+export const getAllUsers = () => api.get('/users');
 
-export const getAllTasks = (token) => api.get('/tasks/all', {
-  headers: {
-    Authorization: `Bearer ${token}`
-  }
-});
+export const getAllTasks = () => api.get('/tasks/all');
 
 export const updateUser = (userId, userData, token) => api.patch(`/users/${userId}`, userData, {
   headers: {
@@ -136,17 +137,6 @@ export const resetPassword = (token, password) => {
   return api.post('/users/reset-password', { token, password });
 };
 
-// Error interceptor
-api.interceptors.response.use(
-  response => response,
-  error => {
-    // Handle token expiration
-    if (error.response && error.response.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
-  }
-);
+
 
 export default api;
