@@ -261,7 +261,8 @@ const TasksPage = () => {
     }
   };
 
-  // Add this debugging code
+  // Uncomment for debug purposes
+  /*
   useEffect(() => {
     if (tasks.length > 0) {
       console.log('Task sample:', tasks[0]);
@@ -271,6 +272,7 @@ const TasksPage = () => {
       console.log('User ID:', user?._id);
     }
   }, [tasks, user]);
+  */
 
   useEffect(() => {
     if (isUnassigned) {
@@ -462,14 +464,16 @@ const TasksPage = () => {
                 <CardActions>
                   {/* These buttons are visible based on permissions */}
                   <Box>
-                    <Tooltip title="Edit">
-                      <IconButton 
-                        size="small" 
-                        onClick={() => handleOpenDialog(task)}
-                        disabled={!canEditTask(task)}
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
+                    <Tooltip title={canEditTask(task) ? "Edit" : "You cannot edit this task"}>
+                      <span>
+                        <IconButton 
+                          size="small" 
+                          onClick={() => handleOpenDialog(task)}
+                          disabled={!canEditTask(task)}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </span>
                     </Tooltip>
                     <Tooltip title="Delete">
                       <IconButton size="small" color="error" onClick={() => handleDeleteTask(task._id)}>
@@ -581,7 +585,7 @@ const TasksPage = () => {
                 label="Due Date"
                 value={dueDate}
                 onChange={setDueDate}
-                renderInput={(params) => <TextField {...params} fullWidth />}
+                slotProps={{ textField: { fullWidth: true } }}
               />
             </Box>
             {isAdmin && (
