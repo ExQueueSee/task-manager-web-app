@@ -182,7 +182,7 @@ const AdminTasksPage = () => {
       }
       
       // Create the task
-      const response = await fetch('http://localhost:3000/tasks', {
+      const response = await fetch('http://localhost:3001/tasks', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -222,7 +222,7 @@ const AdminTasksPage = () => {
       }}
     >
       <Typography variant="h4" component="h1" gutterBottom>
-        Task Management
+        Task Management (Admin) 
       </Typography>
       
       <Button 

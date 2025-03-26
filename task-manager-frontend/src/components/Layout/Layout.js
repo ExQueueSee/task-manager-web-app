@@ -14,8 +14,10 @@ import { styled } from '@mui/material/styles';
 import NavItem from './NavItem';
 import { useAuth } from '../../context/AuthContext';
 
+// Define the width of the drawer
 const drawerWidth = 240;
 
+// Custom styled AppBar component
 const AppBarStyled = styled(AppBar, {
   shouldForwardProp: (prop) => prop !== 'open',
 })(({ theme, open }) => ({
@@ -39,6 +41,7 @@ const AppBarStyled = styled(AppBar, {
   }),
 }));
 
+// Custom styled Drawer component
 const DrawerStyled = styled(Drawer, { shouldForwardProp: (prop) => prop !== 'open' })(
   ({ theme, open }) => ({
     '& .MuiDrawer-paper': {
@@ -70,6 +73,7 @@ const DrawerStyled = styled(Drawer, { shouldForwardProp: (prop) => prop !== 'ope
   }),
 );
 
+// Custom styled Typography component for the logo text
 const LogoText = styled(Typography)(({ theme }) => ({
   fontFamily: '"Montserrat", sans-serif',
   fontWeight: 700,
@@ -80,22 +84,25 @@ const LogoText = styled(Typography)(({ theme }) => ({
 }));
 
 const Layout = () => {
+  // State to manage the drawer open/close status
   const [open, setOpen] = useState(true);
   const { user, logout } = useAuth();
 
-
+  // Function to toggle the drawer open/close status
   const toggleDrawer = () => {
     setOpen(!open);
   };
 
   return (
     <Box sx={{ display: 'flex' }}>
+      {/* AppBar with custom styles */}
       <AppBarStyled position="absolute" open={open}>
         <Toolbar
           sx={{
             pr: '24px',
           }}
         >
+          {/* Menu button to toggle the drawer */}
           <IconButton
             edge="start"
             color="inherit"
@@ -136,6 +143,7 @@ const Layout = () => {
             />
           </Box>
           
+          {/* Logo text */}
           <LogoText
             component="h1"
             variant="h5"
@@ -145,11 +153,13 @@ const Layout = () => {
           >
             Task Manager
           </LogoText>
+          {/* Logout button */}
           <IconButton color="inherit" onClick={logout}>
             <LogoutIcon />
           </IconButton>
         </Toolbar>
       </AppBarStyled>
+      {/* Drawer with custom styles */}
       <DrawerStyled variant="permanent" open={open}>
         <Toolbar
           sx={{
@@ -159,14 +169,19 @@ const Layout = () => {
             px: [1],
           }}
         >
+          {/* Button to close the drawer */}
           <IconButton onClick={toggleDrawer}>
             <ChevronLeftIcon />
           </IconButton>
         </Toolbar>
         <Divider />
+        {/* Navigation items */}
         <List component="nav">
           <NavItem to="/" icon={<DashboardIcon />} text="Dashboard" />
-          <NavItem to="/tasks" icon={<TaskIcon />} text="Tasks" />
+          {/* Only show Tasks link for non-admin users */}
+          {user && user.role !== 'admin' && (
+            <NavItem to="/tasks" icon={<TaskIcon />} text="Tasks" />
+          )}
           <NavItem to="/profile" icon={<AccountCircleIcon />} text="Profile" />
           
           <Divider sx={{ my: 1 }} />
@@ -193,6 +208,7 @@ const Layout = () => {
           )}
         </List>
       </DrawerStyled>
+      {/* Main content area */}
       <Box
         component="main"
         sx={{

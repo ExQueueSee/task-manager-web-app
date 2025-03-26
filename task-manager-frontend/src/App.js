@@ -18,6 +18,7 @@ import PendingApprovalPage from './pages/PendingApprovalPage';
 import RegistrationDeclinedPage from './pages/RegistrationDeclinedPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
 import GlobalBackground from './components/GlobalBackground';
 import BrandLogo from './components/BrandLogo';
 
@@ -130,6 +131,7 @@ const AppContent = () => {
           <Route path="/registration-declined" element={<RegistrationDeclinedPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+          <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
           
           {/* Protected routes */}
           <Route 
@@ -141,7 +143,14 @@ const AppContent = () => {
             }
           >
             <Route index element={<Dashboard />} />
-            <Route path="tasks" element={<TasksPage />} />
+            <Route 
+              path="tasks" 
+              element={
+                <ProtectedRoute adminForbidden>
+                  <TasksPage />
+                </ProtectedRoute>
+              } 
+            />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="admin">
               <Route 

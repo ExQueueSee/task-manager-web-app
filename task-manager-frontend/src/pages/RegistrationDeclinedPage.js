@@ -41,7 +41,7 @@ const RegistrationDeclinedPage = () => {
           Your registration request has been declined by an administrator.
         </Typography>
         <Typography variant="body2" color="text.secondary" paragraph>
-          If you believe this is an error, please contact the system administrator at admin@icterra.com.
+          If you believe this is an error, please contact the system administrator.
         </Typography>
         <Button 
           onClick={handleBackToLogin}

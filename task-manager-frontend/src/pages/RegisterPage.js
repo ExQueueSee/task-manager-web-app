@@ -15,19 +15,19 @@ import {
 } from '@mui/material';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import InfoIcon from '@mui/icons-material/Info';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink} from 'react-router-dom';
 import { registerUser } from '../api';
 import useDocumentTitle from '../hooks/useDocumentTitle';
+import { useNavigate } from 'react-router-dom';
 
-// Add this function to validate email format
+// Add this function to validate email format 
 const validateEmail = (email) => {
   const companyEmailRegex = /^[a-zA-Z0-9.]+@icterra\.com$/;
   return companyEmailRegex.test(email);
 };
 
-const Register = () => {
+const Register = () => { 
   useDocumentTitle('Sign Up');
-  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -39,6 +39,7 @@ const Register = () => {
   const [success, setSuccess] = useState('');
   const [errors, setErrors] = useState({});
   const [isValidEmail, setIsValidEmail] = useState(true);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
@@ -92,13 +93,10 @@ const Register = () => {
       });
       
       console.log('User registered:', response.data);
-      setSuccess('Registration successful! You can now login.');
-      
-      // Redirect to login after a short delay
+      setSuccess('Registration initiated! Please check your email to verify your account.');
       setTimeout(() => {
         navigate('/login');
-      }, 2000);
-      
+      }, 3000);
     } catch (error) {
       console.error('Error registering user:', error);
       setError(error.response?.data?.error || 'Registration failed. Please try again.');

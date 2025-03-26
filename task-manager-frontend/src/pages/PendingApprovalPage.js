@@ -41,7 +41,7 @@ const PendingApprovalPage = () => {
           Your account is currently pending approval by an administrator. You'll be able to login once your account has been approved.
         </Typography>
         <Typography variant="body2" color="text.secondary" paragraph>
-          This typically takes 1-2 business days. You'll receive an email notification when your account is approved.
+          This typically takes at most 1-2 business days. Check back in regularly to see if your account has been approved.
         </Typography>
         <Button 
           onClick={handleBackToLogin} 

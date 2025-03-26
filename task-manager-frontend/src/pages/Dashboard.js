@@ -25,16 +25,16 @@ import { useAuth } from '../context/AuthContext';
 import { format } from 'date-fns';
 import useDocumentTitle from '../hooks/useDocumentTitle';
 
-const Dashboard = () => {
+const DashboardPage = () => {
   useDocumentTitle('Dashboard');
   
   const { token, user } = useAuth();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(null);
+  const [upcomingTasks, setUpcomingTasks] = useState([]);
 
-
-      //Add "cancelled" to your status colors object wrapped in useMemo
+  //Add "cancelled" to your status colors object wrapped in useMemo
   const statusColors = useMemo(() => ({
     'pending': '#3498db',     // Blue
     'in-progress': '#f39c12', // Orange/amber
@@ -44,11 +44,15 @@ const Dashboard = () => {
   }), []);
 
   useEffect(() => {
-    const fetchTasks = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await getTasks(token);
-        setTasks(response.data);
+        const tasksResponse = await getTasks(token);
+        setTasks(tasksResponse.data);
+        
+        // Apply the filter for upcoming tasks
+        setUpcomingTasks(getUpcomingTasks(tasksResponse.data));
+        
       } catch (error) {
         console.error('Error fetching tasks:', error);
       } finally {
@@ -57,13 +61,31 @@ const Dashboard = () => {
     };
 
     if (token) {
-      fetchTasks();
+      fetchData();
     }
   }, [token]);
 
-  
+  // Filter function for upcoming tasks
+  const getUpcomingTasks = (tasks) => {
+    if (!tasks) return [];
+    
+    // Filter out completed, cancelled, behind-schedule tasks and tasks without due date
+    return tasks
+      .filter(task => 
+        task.status !== 'completed' && 
+        task.status !== 'cancelled' && 
+        task.status !== 'behind-schedule' &&
+        task.dueDate !== null
+      )
+      .sort((a, b) => {
+        // Sort by due date (ascending)
+        if (!a.dueDate) return 1;
+        if (!b.dueDate) return -1;
+        return new Date(a.dueDate) - new Date(b.dueDate);
+      })
+      .slice(0, 5); // Limit to 5 tasks
+  };
 
-  // Update this code block (around line 130)
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter(task => task.status === 'completed').length;
   const pendingTasks = tasks.filter(task => task.status === 'pending').length;
@@ -118,12 +140,6 @@ const Dashboard = () => {
   const onPieEnter = (_, index) => {
     setActiveIndex(index);
   };
-
-  // Get upcoming tasks (sorted by due date)
-  const upcomingTasks = [...tasks]
-    .filter(task => task.status !== 'completed' && task.dueDate)
-    .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
-    .slice(0, 5);
 
   // Recently completed tasks
   const recentlyCompleted = [...tasks]
@@ -221,7 +237,7 @@ const Dashboard = () => {
         {/* Upcoming Tasks */}
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2, height: '100%' }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>Upcoming Tasks</Typography>
+            <Typography variant="h6" sx={{ mb: 2 }}>Tasks With Deadlines</Typography>
             {upcomingTasks.length > 0 ? (
               <List>
                 {upcomingTasks.map((task) => (
@@ -305,4 +321,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default DashboardPage;

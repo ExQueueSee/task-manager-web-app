@@ -8,8 +8,8 @@ const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
-const { sendPasswordResetEmail } = require('./utils/emailService');
+const crypto = require('crypto'); // Make sure this is at the top with other imports
+const { sendPasswordResetEmail, sendVerificationEmail } = require('./utils/emailService');
 const Task = require('./models/Task'); // Import the Task model
 const User = require('./models/User'); // Import the User model
 const { auth, adminAuth } = require('./middleware/auth'); // Import the auth and adminAuth middleware
@@ -334,29 +334,78 @@ app.post('/users', async (req, res) => {
     try {
         // Email validation (keep your existing validation)
         const email = req.body.email;
+        
         const companyEmailRegex = /^[a-zA-Z0-9.]+@icterra\.com$/;
         
         if (!companyEmailRegex.test(email)) {
             return res.status(400).send({ error: 'Only @icterra.com email addresses are allowed.' });
         }
         
-        // Create new user with pending approval
+        // Generate verification token
+        const verificationToken = crypto.randomBytes(20).toString('hex');
+        
+        // Create new user with pending approval and email verification token
         const user = new User({
             ...req.body,
-            approvalStatus: 'pending'
+            approvalStatus: 'pending',
+            emailVerified: false,
+            verificationToken: verificationToken,
+            verificationTokenExpires: Date.now() + 86400000 // 24 hours
         });
         
         await user.save();
-        const token = await user.generateAuthToken();
+        
+        // Send verification email
+        await sendVerificationEmail(email, verificationToken);
         
         res.status(201).send({ 
-            user, 
-            token,
-            message: 'Registration successful! Your account is pending approval by an admin.'
+            message: 'Registration initiated! Please check your email to verify your account.'
         });
     } catch (error) {
         res.status(400).send(error);
     }
+});
+
+// New endpoint to verify email
+
+app.get('/users/verify-email/:token', async (req, res) => {
+  try {
+    console.log("Received verification request with token:", req.params.token);
+    
+    const user = await User.findOne({
+      verificationToken: req.params.token,
+      verificationTokenExpires: { $gt: Date.now()}
+    });
+    
+    // If the user isn't found, return early
+    if (!user) {
+      console.log("No user found with this verification token");
+      return res.status(400).send({ error: 'Verification token is invalid or has expired' }); 
+    }
+    
+    console.log("User found:", user.email);
+
+    // If already verified, just return success
+    if (user.emailVerified) {
+      return res.send({
+        message: 'Email is already verified. Your account is now pending admin approval.',
+        email: user.email
+      });
+    }
+
+    user.emailVerified = true;
+    user.verificationToken = undefined;
+    user.verificationTokenExpires = undefined;
+    await user.save();
+    
+    res.send({ 
+      message: 'Email verified successfully! Your account is now pending admin approval.',
+      email: user.email
+    });
+  } catch (error) {
+    console.error('Email verification error:', error);
+    res.status(500).send({ error: 'Error verifying email' });
+  }
 });
 
 /**
@@ -391,20 +440,21 @@ app.post('/users/login', async (req, res) => {
         // This gets the user if credentials are correct
         const user = await User.findByCredentials(req.body.email, req.body.password);
         
-        console.log('User trying to login:', user.email, 'Status:', user.approvalStatus); // Add this line for debugging
+        console.log('User trying to login:', user.email, 'Status:', user.approvalStatus);
+        
+        // Check email verification
+        if (!user.emailVerified) {
+            return res.status(401).send({ 
+                error: 'Please verify your email address before logging in.',
+                emailVerified: false
+            });
+        }
         
         // Check approval status
         if (user.approvalStatus === 'pending') {
             return res.status(401).send({ 
                 error: 'Your account is pending approval by an admin.',
                 approvalStatus: 'pending'
-            });
-        }
-        
-        if (user.approvalStatus === 'declined') {
-            return res.status(401).send({ 
-                error: 'Your registration has been declined. Please contact administration.',
-                approvalStatus: 'declined'
             });
         }
         

@@ -5,22 +5,27 @@ import { updatePassword } from '../api';
 import { useSnackbar } from 'notistack';
 
 const ChangePasswordForm = () => {
+  // Get authentication context and snackbar for notifications
   const { token, setToken, setUser } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
+
+  // State variables for form inputs and loading state
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validation
+    // Validation: Check if new passwords match
     if (newPassword !== confirmPassword) {
       enqueueSnackbar('New passwords do not match', { variant: 'error' });
       return;
     }
     
+    // Validation: Check if new password is at least 7 characters long
     if (newPassword.length < 7) {
       enqueueSnackbar('Password must be at least 7 characters long', { variant: 'error' });
       return;
@@ -28,6 +33,7 @@ const ChangePasswordForm = () => {
     
     setLoading(true);
     try {
+      // Call API to update password
       const response = await updatePassword(currentPassword, newPassword, token);
       
       // Update token in localStorage and context if returned
@@ -37,13 +43,15 @@ const ChangePasswordForm = () => {
         setUser(response.data.user);
       }
       
+      // Show success notification
       enqueueSnackbar('Password updated successfully', { variant: 'success' });
       
-      // Clear form
+      // Clear form inputs
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (error) {
+      // Show error notification
       enqueueSnackbar(
         error.response?.data?.error || 'Failed to update password', 
         { variant: 'error' }
@@ -60,6 +68,7 @@ const ChangePasswordForm = () => {
       </Typography>
       
       <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 2 }}>
+        {/* Current Password Input */}
         <TextField
           margin="normal"
           required
@@ -71,6 +80,7 @@ const ChangePasswordForm = () => {
           value={currentPassword}
           onChange={(e) => setCurrentPassword(e.target.value)}
         />
+        {/* New Password Input */}
         <TextField
           margin="normal"
           required
@@ -82,6 +92,7 @@ const ChangePasswordForm = () => {
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
         />
+        {/* Confirm New Password Input */}
         <TextField
           margin="normal"
           required
@@ -93,6 +104,7 @@ const ChangePasswordForm = () => {
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
         />
+        {/* Submit Button */}
         <Button
           type="submit"
           fullWidth

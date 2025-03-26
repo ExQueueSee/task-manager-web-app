@@ -1,16 +1,20 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { getUserProfile } from '../api';
 
+// Create a context for authentication
 const AuthContext = createContext();
 
+// Custom hook to use the AuthContext
 export const useAuth = () => useContext(AuthContext);
 
+// AuthProvider component to provide auth context to its children
 export const AuthProvider = ({ children }) => {
-  // Check both localStorage and sessionStorage on initial load
+  // Function to get token from localStorage or sessionStorage
   const getStoredToken = () => {
     return localStorage.getItem('token') || sessionStorage.getItem('token') || null;
   };
   
+  // Function to get user from localStorage or sessionStorage
   const getStoredUser = () => {
     const userFromLocal = localStorage.getItem('user');
     const userFromSession = sessionStorage.getItem('user');
@@ -18,14 +22,18 @@ export const AuthProvider = ({ children }) => {
            userFromSession ? JSON.parse(userFromSession) : null;
   };
   
+  // State to store token
   const [token, setToken] = useState(getStoredToken());
+  // State to store user
   const [user, setUser] = useState(getStoredUser());
+  // State to manage loading state
   const [loading, setLoading] = useState(true);
+  // State to store approval status
   const [approvalStatus, setApprovalStatus] = useState(
     localStorage.getItem('approvalStatus') || sessionStorage.getItem('approvalStatus') || null
   );
 
-  // Login with remember me option
+  // Function to handle login with remember me option
   const login = (token, user, rememberMe = false) => {
     setToken(token);
     setUser(user);
@@ -53,7 +61,7 @@ export const AuthProvider = ({ children }) => {
     sessionStorage.removeItem('approvalStatus'); // Clear approval status
   };
 
-  // Logout function - clear both storages
+  // Function to handle logout - clear both storages
   const logout = () => {
     setToken(null);
     setUser(null);
@@ -63,7 +71,7 @@ export const AuthProvider = ({ children }) => {
     sessionStorage.removeItem('user');
   };
 
-  // Approval status functions
+  // Function to set approval status to pending
   const setPendingApproval = () => {
     setApprovalStatus('pending');
     sessionStorage.setItem('approvalStatus', 'pending');
@@ -72,6 +80,7 @@ export const AuthProvider = ({ children }) => {
     logout();
   };
 
+  // Function to set approval status to declined
   const setDeclinedApproval = () => {
     setApprovalStatus('declined');
     sessionStorage.setItem('approvalStatus', 'declined');
@@ -80,12 +89,14 @@ export const AuthProvider = ({ children }) => {
     logout();
   };
 
+  // Function to clear approval status
   const clearApprovalStatus = () => {
     setApprovalStatus(null);
     localStorage.removeItem('approvalStatus');
     sessionStorage.removeItem('approvalStatus');
   };
 
+  // Effect to fetch user profile if token is present
   useEffect(() => {
     if (token) {
       getUserProfile()  // Don't pass token, let interceptor handle it
@@ -104,7 +115,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, [token]);
 
-  // Add this useEffect to validate token on page load
+  // Effect to validate token on page load
   useEffect(() => {
     const validateToken = async () => {
       // If we're in a new browser session, only check localStorage

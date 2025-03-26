@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+// Define the user schema with various fields and validation
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -45,6 +46,16 @@ const userSchema = new mongoose.Schema({
         enum: ['pending', 'approved', 'declined'],
         default: 'pending'
     },
+    emailVerified: {
+        type: Boolean,
+        default: false
+    },
+    verificationToken: {
+        type: String
+    },
+    verificationTokenExpires: {
+        type: Date
+    },
     resetPasswordToken: {
         type: String
     },
@@ -59,6 +70,7 @@ userSchema.pre('save', async function (next) {
     
     if (user.isModified('password')) {
         try {
+            // Hash the password with bcrypt
             user.password = await bcrypt.hash(user.password, 8);
         } catch (err) {
             console.error('Password hashing error:', err);
@@ -71,19 +83,21 @@ userSchema.pre('save', async function (next) {
 // Generate an auth token for the user
 userSchema.methods.generateAuthToken = async function () {
     const user = this;
+    // Create a JWT token with user ID and role
     const token = jwt.sign({ _id: user._id.toString(), role: user.role }, process.env.JWT_SECRET);
+    // Add the token to the user's tokens array
     user.tokens = user.tokens.concat({ token });
-    await user.save(); // Add this line to save the token to the database
+    await user.save(); // Save the token to the database
     return token;
 };
 
-// Update the findByCredentials method (around line 79)
+// Find user by credentials (email and password)
 userSchema.statics.findByCredentials = async (email, password) => {
   try {
     // Log the email being looked up (sanitized for logs)
     console.log(`Attempting login for: ${email.substring(0, 3)}...@${email.split('@')[1]}`);
     
-    // Find the user
+    // Find the user by email
     const user = await User.findOne({ email });
     
     // If no user found with this email
@@ -122,12 +136,12 @@ userSchema.statics.findByCredentials = async (email, password) => {
   }
 };
 
-// Add this method to your User schema to control what gets sent to JSON
+// Control what gets sent to JSON
 userSchema.methods.toJSON = function() {
     const user = this;
     const userObject = user.toObject();
     
-    // Include approvalStatus in the returned object
+    // Include only specific fields in the returned object
     return {
         _id: userObject._id,
         name: userObject.name,
@@ -137,6 +151,7 @@ userSchema.methods.toJSON = function() {
     };
 };
 
+// Create the User model from the schema
 const User = mongoose.model('User', userSchema);
 
 module.exports = User;

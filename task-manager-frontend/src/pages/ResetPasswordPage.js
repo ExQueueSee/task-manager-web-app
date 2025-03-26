@@ -68,7 +68,7 @@ const ResetPasswordPage = () => {
       // Redirect to login page after 3 seconds
       setTimeout(() => {
         navigate('/login');
-      }, 3000);
+      }, 3001);
     } catch (error) {
       console.error('Reset password error:', error);
       if (error.response) {

@@ -13,10 +13,10 @@ const GlobalBackground = () => {
         backgroundImage: 'url(/images/globe_background.jpg)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        opacity: 1, // A bit more visible but still subtle
+        opacity: 1, 
         zIndex: -999,
         pointerEvents: 'none',
-        // Add a dark overlay to enhance readability
+        //overlay
         '&::after': {
           content: '""',
           position: 'absolute',
@@ -24,7 +24,7 @@ const GlobalBackground = () => {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(243, 226, 226, 0.07)', // Dark overlay
+          backgroundColor: 'rgba(243, 226, 226, 0.07)',
           zIndex: -998,
         }
       }}
