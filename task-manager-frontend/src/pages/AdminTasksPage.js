@@ -67,11 +67,22 @@ const AdminTasksPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
+  // Update the fetchTasks function to automatically identify behind schedule tasks
   const fetchTasks = async () => {
     setLoading(true);
     try {
       const response = await getAllTasks(token);
-      setTasks(response.data);
+      // Check for and update behind schedule tasks
+      const updatedTasks = response.data.map(task => {
+        if (task.dueDate && new Date(task.dueDate) < new Date() && 
+            task.status !== 'completed' && 
+            task.status !== 'cancelled' &&
+            task.status !== 'behind-schedule') {
+          return { ...task, status: 'behind-schedule' };
+        }
+        return task;
+      });
+      setTasks(updatedTasks);
     } catch (error) {
       enqueueSnackbar('Failed to fetch tasks', { variant: 'error' });
     } finally {
@@ -113,14 +124,48 @@ const AdminTasksPage = () => {
     setAssignDialogOpen(false);
   };
 
+  // Modify the handleEditSave function to enforce behind schedule restrictions
   const handleEditSave = async () => {
     try {
+      // Find the original task we're editing
+      const originalTask = tasks.find(t => t._id === currentTask._id);
+      const isOverdue = originalTask.dueDate && new Date(originalTask.dueDate) < new Date();
+      const wasBehindSchedule = originalTask.status === 'behind-schedule';
+
+      // Special handling for behind schedule tasks
+      if ((wasBehindSchedule || isOverdue) && 
+          originalTask.status !== 'completed' && 
+          originalTask.status !== 'cancelled') {
+        
+        // If trying to change status of a behind-schedule task
+        if (originalTask.status !== editTask.status) {
+          // Only allow completed or cancelled status changes
+          const allowedStatuses = ['completed', 'cancelled', 'behind-schedule'];
+          if (!allowedStatuses.includes(editTask.status)) {
+            enqueueSnackbar('Behind schedule tasks can only be set to completed or cancelled', { 
+              variant: 'warning' 
+            });
+            return;
+          }
+        }
+        
+        // Handle due date extension
+        const newDueDate = editTask.dueDate ? new Date(editTask.dueDate) : null;
+        const currentDate = new Date();
+        const isDueDateExtended = newDueDate && newDueDate > currentDate;
+        
+        if (isDueDateExtended) {
+          // Due date is being extended to the future, allow the update
+          // The backend will handle the status change based on owner
+        }
+      }
+      
       await updateTask(currentTask._id, editTask, token);
       enqueueSnackbar('Task updated successfully', { variant: 'success' });
       fetchTasks();
       setEditDialogOpen(false);
     } catch (error) {
-      enqueueSnackbar('Failed to update task', { variant: 'error' });
+      enqueueSnackbar(error.response?.data?.error || 'Failed to update task', { variant: 'error' });
     }
   };
 
@@ -182,7 +227,7 @@ const AdminTasksPage = () => {
       }
       
       // Create the task
-      const response = await fetch('http://localhost:3001/tasks', {
+      const response = await fetch('http://localhost:3000/tasks', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

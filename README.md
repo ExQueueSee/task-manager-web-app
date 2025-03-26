@@ -42,7 +42,7 @@ The Task Manager Web App is a system designed for managing tasks efficiently wit
 - Admin can control task visibility when creating tasks.
 - Visibility settings can be changed after task creation.
 - Users can work on multiple tasks simultaneously.
-- A task can only have one assigned user at a time.
+- A task can have only one assigned user at a time.
 
 ---
 

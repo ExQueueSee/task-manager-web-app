@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -81,18 +81,39 @@ const TasksPage = () => {
   const [isUnassigned, setIsUnassigned] = useState(false);
   const [allUsers, setAllUsers] = useState([]);
 
+  // Add this function to check and update tasks that are behind schedule
+  const checkBehindScheduleTasks = useCallback((tasksList) => {
+    const now = new Date();
+    const updatedTasks = tasksList.map(task => {
+      // Check if task has due date and is overdue
+      if (task.dueDate && new Date(task.dueDate) < now && 
+          task.status !== 'completed' && 
+          task.status !== 'cancelled' &&
+          task.status !== 'behind-schedule') {
+        // Automatically update the status on the UI
+        return { ...task, status: 'behind-schedule' };
+      }
+      return task;
+    });
+    
+    return updatedTasks;
+  }, []);
+
+  // Modify your fetchTasks function
   const fetchTasks = React.useCallback(async () => {
     try {
       setLoading(true);
       const response = await getTasks(token);
-      setTasks(response.data);
+      // Apply behind schedule check before setting state
+      const updatedTasks = checkBehindScheduleTasks(response.data);
+      setTasks(updatedTasks);
     } catch (error) {
       enqueueSnackbar('Failed to fetch tasks', { variant: 'error' });
       console.error('Error fetching tasks:', error);
     } finally {
       setLoading(false);
     }
-  }, [token, enqueueSnackbar]);
+  }, [token, enqueueSnackbar, checkBehindScheduleTasks]);
 
   useEffect(() => {
     fetchTasks();
@@ -199,12 +220,34 @@ const TasksPage = () => {
     }
   };
 
-  // Update the handleStatusChange function
+  // Modify your handleStatusChange function to prevent status changes for behind schedule tasks
   const handleStatusChange = async (taskId, newStatus) => {
     try {
+      const task = tasks.find(t => t._id === taskId);
+      
+      if (!task) return;
+      
+      // Check if task is behind schedule
+      const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
+      const isBehindSchedule = task.status === 'behind-schedule';
+      
+      if ((isOverdue || isBehindSchedule) && !isAdmin) {
+        enqueueSnackbar('Task is behind schedule. Status can only be modified by an admin.', { 
+          variant: 'warning' 
+        });
+        return;
+      }
+      
+      // For admin users with behind schedule tasks
+      if ((isOverdue || isBehindSchedule) && isAdmin && newStatus !== 'cancelled') {
+        enqueueSnackbar('Behind schedule tasks can only be cancelled. To enable other statuses, please update the due date first.', { 
+          variant: 'warning' 
+        });
+        return;
+      }
+      
       await updateTask(taskId, { status: newStatus }, token);
       
-      // If status is "pending", show a specific message
       if (newStatus === 'pending') {
         enqueueSnackbar('Task is now available for others to take', { variant: 'info' });
       } else {
@@ -263,6 +306,30 @@ const TasksPage = () => {
   const canEditTask = (task) => {
     return isAdmin || (task.owner && task.owner._id === user?._id);
   };
+
+  // Add this to your TasksPage component
+  // Set up interval to check for overdue tasks
+  useEffect(() => {
+    // Check every once in a while for tasks that might have become overdue
+    const interval = setInterval(() => {
+      setTasks(prevTasks => {
+        const now = new Date();
+        return prevTasks.map(task => {
+          if (task.dueDate && new Date(task.dueDate) < now && 
+              task.status !== 'completed' && 
+              task.status !== 'cancelled' &&
+              task.status !== 'behind-schedule') {
+            // If found any newly overdue task, fetch fresh data from server
+            fetchTasks();
+            return task; // Original return since fetchTasks will update state
+          }
+          return task;
+        });
+      });
+    }, 5000); // Check every 5 sec
+    
+    return () => clearInterval(interval);
+  }, [fetchTasks]);
 
   return (
     <Paper sx={{ p: 3 }}>

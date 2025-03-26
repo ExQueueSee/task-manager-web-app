@@ -221,6 +221,57 @@ app.patch('/tasks/:id', auth, async (req, res) => {
       return res.status(403).send({ error: 'Not authorized to update this task' });
     }
     
+    // Check if task is behind schedule
+    const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
+    const isBehindSchedule = task.status === 'behind-schedule';
+    
+    // Handle status change restrictions for behind schedule tasks
+    if (isBehindSchedule || isOverdue) {
+      // If task is behind schedule and user is trying to change status
+      if (updates.includes('status')) {
+        if (req.user.role !== 'admin') {
+          // Non-admin users can't change status at all
+          return res.status(403).send({ 
+            error: 'Task is behind schedule. Status can only be modified by an admin.' 
+          });
+        } else {
+          // Admin users can only set status to completed or cancelled
+          const allowedStatuses = ['completed', 'cancelled', 'behind-schedule'];
+          if (!allowedStatuses.includes(req.body.status)) {
+            return res.status(400).send({ 
+              error: 'Behind schedule tasks can only be set to completed or cancelled' 
+            });
+          }
+        }
+      }
+      
+      // If due date is being updated for behind schedule task
+      if (updates.includes('dueDate')) {
+        if (req.user.role !== 'admin') {
+          return res.status(403).send({ 
+            error: 'Only admins can extend the due date for behind schedule tasks' 
+          });
+        }
+        
+        // If admin is extending due date, reset the status based on ownership
+        const newDueDate = new Date(req.body.dueDate);
+        if (newDueDate > new Date()) {
+          // Reset status based on whether task has an owner
+          if (task.status === 'behind-schedule') {
+            if (task.owner) {
+              task.status = 'in-progress';
+            } else {
+              task.status = 'pending'; // No owner = available for assignment
+            }
+          }
+        }
+      } else if (isOverdue && !isBehindSchedule) {
+        // If task is overdue but not marked as behind-schedule, update it
+        task.status = 'behind-schedule';
+      }
+    }
+    
+    // Apply updates
     updates.forEach(update => task[update] = req.body[update]);
     
     // Clear owner if status changed to pending
