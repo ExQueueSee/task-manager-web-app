@@ -88,6 +88,16 @@ app.post('/tasks', auth, async (req, res) => {
   try {
     const taskData = { ...req.body };
 
+    // Handle visibility
+    if (taskData.visibleTo) {
+      // visibleTo should be an array of user IDs
+      taskData.isPublic = false;
+    } else {
+      // No specific users selected, make it public
+      taskData.isPublic = true;
+      taskData.visibleTo = [];
+    }
+
     // Remove owner if it's null, let MongoDB use the default value
     if (taskData.owner === null) {
       delete taskData.owner;
@@ -130,9 +140,9 @@ app.get('/tasks', auth, async (req, res) => {
                 // Tasks created by this user
                 { owner: req.user._id },
                 // Public tasks visible to all
-                { visibility: 'public' },
-                // Team tasks (if you implement teams later)
-                { visibility: 'team' }
+                { isPublic: true },
+                // Tasks where current user is in visibleTo array
+                { visibleTo: req.user._id }
             ]
         };
         
@@ -202,7 +212,7 @@ app.get('/tasks/:id', auth, async (req, res) => {
 app.patch('/tasks/:id', auth, async (req, res) => {
   try {
     const updates = Object.keys(req.body);
-    const allowedUpdates = ['title', 'description', 'status', 'dueDate', 'priority', 'visibility'];
+    const allowedUpdates = ['title', 'description', 'status', 'dueDate', 'priority', 'visibleTo', 'isPublic'];
     const isValidOperation = updates.every(update => allowedUpdates.includes(update));
     
     if (!isValidOperation) {
@@ -273,6 +283,13 @@ app.patch('/tasks/:id', auth, async (req, res) => {
     
     // Apply updates
     updates.forEach(update => task[update] = req.body[update]);
+    
+    // Special handling for visibility
+    if (updates.includes('visibleTo') && req.body.visibleTo.length > 0) {
+      task.isPublic = false;
+    } else if (updates.includes('isPublic') && req.body.isPublic) {
+      task.visibleTo = [];
+    }
     
     // Clear owner if status changed to pending
     if (req.body.status === 'pending') {

@@ -39,11 +39,15 @@ const taskSchema = new mongoose.Schema({
     dueDate: {
         type: Date
     },
-    // Visibility of the task
-    visibility: {
-        type: String,
-        enum: ['public', 'private', 'team'],
-        default: 'public'
+    // Replace visibility enum with an array
+    visibleTo: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
+    // Keep a field to indicate if task is globally visible
+    isPublic: {
+        type: Boolean,
+        default: true
     },
     // Creation date of the task
     createdAt: {

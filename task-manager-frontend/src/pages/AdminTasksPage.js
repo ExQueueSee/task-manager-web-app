@@ -3,7 +3,8 @@ import {
   Typography, Paper, Table, TableBody, TableCell, 
   TableContainer, TableHead, TableRow, Chip, IconButton,
   Button, Dialog, DialogActions, DialogContent, DialogTitle,
-  TextField, MenuItem, Select, FormControl, InputLabel, Box
+  TextField, MenuItem, Select, FormControl, InputLabel, Box,
+  FormControlLabel, Checkbox
 } from '@mui/material';
 import { 
   Edit as EditIcon, 
@@ -15,6 +16,8 @@ import { useSnackbar } from 'notistack';
 import { getAllTasks, updateTask, deleteTask, getAllUsers } from '../api';
 import { STATUS_LABELS, STATUS_COLORS, STATUS_HEX_COLORS } from '../constants/TaskConstants.js';
 import useDocumentTitle from '../hooks/useDocumentTitle.js';
+import UserMultiSelect from '../components/UserMultiSelect';
+
 const statusColors = {
   'pending': 'info', // Blue
   'in-progress': 'warning', // Orange/amber
@@ -46,6 +49,8 @@ const AdminTasksPage = () => {
     description: '',
     status: '',
     dueDate: '',
+    visibleTo: [],
+    isPublic: true
   });
   const [selectedUserId, setSelectedUserId] = useState('');
 
@@ -56,7 +61,8 @@ const AdminTasksPage = () => {
     description: '',
     status: 'pending',
     dueDate: '',
-    visibility: 'public'
+    visibleTo: [],
+    isPublic: true
   });
   const [selectedAssignee, setSelectedAssignee] = useState('');
 
@@ -106,6 +112,8 @@ const AdminTasksPage = () => {
       description: task.description,
       status: task.status,
       dueDate: task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 16) : '',
+      visibleTo: task.visibleTo || [],
+      isPublic: task.isPublic !== undefined ? task.isPublic : true
     });
     setEditDialogOpen(true);
   };
@@ -206,7 +214,8 @@ const AdminTasksPage = () => {
       description: '',
       status: 'pending',
       dueDate: '',
-      visibility: 'public'
+      visibleTo: [],
+      isPublic: true
     });
     setSelectedAssignee('');
     setCreateDialogOpen(true);
@@ -487,6 +496,25 @@ const AdminTasksPage = () => {
               shrink: true,
             }}
           />
+          <FormControl fullWidth margin="dense">
+            <FormControlLabel
+              control={
+                <Checkbox 
+                  checked={editTask.isPublic} 
+                  onChange={(e) => setEditTask({...editTask, isPublic: e.target.checked, visibleTo: e.target.checked ? [] : editTask.visibleTo})}
+                />
+              }
+              label="Visible to everyone"
+            />
+          </FormControl>
+
+          {!editTask.isPublic && (
+            <UserMultiSelect
+              users={users}
+              selectedUserIds={editTask.visibleTo}
+              onChange={(selectedUsers) => setEditTask({...editTask, visibleTo: selectedUsers})}
+            />
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleEditClose}>Cancel</Button>
@@ -598,17 +626,24 @@ const AdminTasksPage = () => {
             }}
           />
           <FormControl fullWidth margin="dense">
-            <InputLabel>Visibility</InputLabel>
-            <Select
-              value={newTask.visibility}
-              label="Visibility"
-              onChange={(e) => setNewTask({...newTask, visibility: e.target.value})}
-            >
-              <MenuItem value="public">Public</MenuItem>
-              <MenuItem value="private">Private</MenuItem>
-              <MenuItem value="team">Team</MenuItem>
-            </Select>
+            <FormControlLabel
+              control={
+                <Checkbox 
+                  checked={newTask.isPublic} 
+                  onChange={(e) => setNewTask({...newTask, isPublic: e.target.checked, visibleTo: e.target.checked ? [] : newTask.visibleTo})}
+                />
+              }
+              label="Visible to everyone"
+            />
           </FormControl>
+
+          {!newTask.isPublic && (
+            <UserMultiSelect
+              users={users}
+              selectedUserIds={newTask.visibleTo}
+              onChange={(selectedUsers) => setNewTask({...newTask, visibleTo: selectedUsers})}
+            />
+          )}
           <FormControl fullWidth margin="dense">
             <InputLabel>Assign To</InputLabel>
             <Select
