@@ -14,7 +14,8 @@ async function createAdminUser() {
     
     if (existingAdmin) {
       // If admin user already exists, log a message and exit the function
-      console.log('Admin user already exists with email:', adminEmail);
+      //console.log('Admin user already exists with email:', adminEmail);
+      console.log('Admin user already exists with this email');
       mongoose.disconnect();
       return;
     }

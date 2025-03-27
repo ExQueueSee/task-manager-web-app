@@ -62,7 +62,8 @@ const ProfilePage = () => {
     setError('');
     setSuccess('');
     
-    console.log("Sending update:", { name: formData.name });
+    console.log("Sending update...");
+    //console.log("Sending update:", { name: formData.name });
     
     try {
       const response = await updateProfile({ name: formData.name }, token);

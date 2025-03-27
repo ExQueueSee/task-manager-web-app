@@ -73,7 +73,8 @@ userSchema.pre('save', async function (next) {
             // Hash the password with bcrypt
             user.password = await bcrypt.hash(user.password, 8);
         } catch (err) {
-            console.error('Password hashing error:', err);
+            //console.error('Password hashing error:', err);
+            console.error('Password hashing error:');
         }
     }
     
@@ -95,35 +96,41 @@ userSchema.methods.generateAuthToken = async function () {
 userSchema.statics.findByCredentials = async (email, password) => {
   try {
     // Log the email being looked up (sanitized for logs)
-    console.log(`Attempting login for: ${email.substring(0, 3)}...@${email.split('@')[1]}`);
-    
+    //console.log(`Attempting login for: ${email.substring(0, 3)}...@${email.split('@')[1]}`);
+    console.log(`Attempting login...`);
+
     // Find the user by email
     const user = await User.findOne({ email });
     
     // If no user found with this email
     if (!user) {
-      console.log(`No user found with email: ${email}`);
+      //console.log(`No user found with email: ${email}`);
+      console.log(`No user found with current email`);
       throw new Error('Unable to login');
     }
     
     // Log that user was found
-    console.log(`User found with email: ${email}`);
+    //console.log(`User found with email: ${email}`);
+    console.log(`User found with current email`);
     
     // Compare passwords
     const isMatch = await bcrypt.compare(password, user.password);
     
     // If password doesn't match
     if (!isMatch) {
-      console.log(`Password mismatch for: ${email}`);
+      //console.log(`Password mismatch for: ${email}`);
+      console.log(`Password mismatch for current email`);
       throw new Error('Unable to login');
     }
     
     // If we get here, credentials are valid
-    console.log(`Authentication successful for: ${email}`);
+    //console.log(`Authentication successful for: ${email}`);
+    console.log(`Authentication successful for current email`);
     
     // Handle missing approvalStatus for old accounts
     if (!user.approvalStatus) {
-      console.log(`Setting default approvalStatus for: ${email}`);
+      //console.log(`Setting default approvalStatus for: ${email}`);
+      console.log(`Setting default approvalStatus for current email`);
       user.approvalStatus = 'approved'; // Set default for old accounts
       await user.save();
     }

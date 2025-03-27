@@ -453,7 +453,8 @@ app.get('/users/verify-email/:token', async (req, res) => {
       return res.status(400).send({ error: 'Verification token is invalid or has expired' }); 
     }
     
-    console.log("User found:", user.email);
+    //console.log("User found:", user.email);
+    console.log("User found");
 
     // If already verified, just return success
     if (user.emailVerified) {
@@ -510,7 +511,8 @@ app.post('/users/login', async (req, res) => {
         // This gets the user if credentials are correct
         const user = await User.findByCredentials(req.body.email, req.body.password);
         
-        console.log('User trying to login:', user.email, 'Status:', user.approvalStatus);
+        //console.log('User trying to login:', user.email, 'Status:', user.approvalStatus);
+        console.log('User trying to login: {REDACTED} ', 'Status:', user.approvalStatus);
         
         // Check email verification
         if (!user.emailVerified) {
@@ -559,7 +561,8 @@ app.get('/users/me', auth, async (req, res) => {
 // Route to update user's own profile (name only)
 app.patch('/users/me', auth, async (req, res) => {
   try {
-    console.log("Received profile update:", req.body);
+    //console.log("Received profile update:", req.body);
+    console.log("Received profile update");
     // Only allow 'name' to be updated
     const updates = Object.keys(req.body);
     const allowedUpdates = ['name'];

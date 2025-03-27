@@ -48,11 +48,11 @@ export const AuthProvider = ({ children }) => {
     
     // Then store in the appropriate storage
     if (rememberMe) {
-      console.log('Storing in localStorage'); // Add logging
+      //console.log('Storing in localStorage'); // Add logging
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
     } else {
-      console.log('Storing in sessionStorage'); // Add logging
+      //console.log('Storing in sessionStorage'); // Add logging
       sessionStorage.setItem('token', token);
       sessionStorage.setItem('user', JSON.stringify(user));
     }

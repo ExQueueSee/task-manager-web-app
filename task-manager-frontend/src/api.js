@@ -111,7 +111,8 @@ export const resetPassword = (token, password) => {
 
 // Verify email with token
 export const verifyEmail = async (token) => {
-  console.log('Sending verification request with token:', token);
+  console.log('Sending verification request...');
+  //console.log('Sending verification request with token:', token);
   return verifyApi.get(`/users/verify-email/${token}`);
 };
 
