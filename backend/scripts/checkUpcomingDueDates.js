@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const Task = require('../models/Task');
+// Add this line to import the User model
+const User = require('../models/User');
 const { sendDueDateReminders } = require('../utils/emailService');
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 
@@ -22,9 +24,10 @@ const checkUpcomingDueDates = async () => {
     const tomorrow = new Date();
     tomorrow.setDate(now.getDate() + 1);
 
-    // Find tasks that:
+    // Modified query to only find tasks that:
     // 1. Have a due date that falls between now and 24 hours from now
     // 2. Are in pending or in-progress status
+    // 3. Haven't been notified yet (lastDueDateNotification is null) OR were notified more than 24 hours ago
     const tasks = await Task.find({
       dueDate: { 
         $gte: now, 
@@ -32,14 +35,26 @@ const checkUpcomingDueDates = async () => {
       },
       status: { 
         $in: ['pending', 'in-progress'] 
-      }
+      },
+      $or: [
+        // Either no notification has been sent yet
+        { lastDueDateNotification: null },
+        // Or the last notification was sent more than 24 hours ago
+        // (in case due date was extended after notification)
+        { lastDueDateNotification: { $lt: new Date(now - 24 * 60 * 60 * 1000) } }
+      ]
     }).populate('owner').populate('visibleTo');
 
-    console.log(`Found ${tasks.length} tasks due within 24 hours.`);
+    console.log(`Found ${tasks.length} tasks due within 24 hours that need notifications.`);
 
-    // Send reminders for each task
+    // Send reminders for each task and update the notification timestamp
     for (const task of tasks) {
       await sendDueDateReminders(task);
+      
+      // Update the task to record that we've sent a notification
+      await Task.findByIdAndUpdate(task._id, { 
+        lastDueDateNotification: new Date() 
+      });
     }
 
     console.log('Due date reminders sent successfully.');

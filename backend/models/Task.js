@@ -39,6 +39,11 @@ const taskSchema = new mongoose.Schema({
     dueDate: {
         type: Date
     },
+    // Add this new field to track the last due date notification
+    lastDueDateNotification: {
+        type: Date,
+        default: null
+    },
     // Replace visibility enum with an array
     visibleTo: [{
         type: mongoose.Schema.Types.ObjectId,
