@@ -13,6 +13,8 @@ const { sendPasswordResetEmail, sendVerificationEmail } = require('./utils/email
 const Task = require('./models/Task'); // Import the Task model
 const User = require('./models/User'); // Import the User model
 const { auth, adminAuth } = require('./middleware/auth'); // Import the auth and adminAuth middleware
+const cron = require('node-cron');
+const checkUpcomingDueDates = require('./scripts/checkUpcomingDueDates');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -874,4 +876,9 @@ app.use((err, req, res, next) => {
 // Start server
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
+});
+
+cron.schedule('0 * * * *', () => {
+  console.log('Running scheduled due date check...');
+  checkUpcomingDueDates();
 });

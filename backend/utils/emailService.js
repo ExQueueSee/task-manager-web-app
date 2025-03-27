@@ -65,7 +65,73 @@ const sendVerificationEmail = async (email, verificationToken) => {
   }
 };
 
+/**
+ * Sends due date reminder emails for tasks that are due within 24 hours
+ * @param {Object} task - The task object with populated owner and visibleTo fields
+ */
+const sendDueDateReminders = async (task) => {
+  try {
+    const dueDate = new Date(task.dueDate);
+    const formattedDate = dueDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+    const formattedTime = dueDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    
+    // If task has an owner, send them an urgent reminder
+    if (task.owner && task.owner.email) {
+      const ownerSubject = `URGENT: Task "${task.title}" is due tomorrow!`;
+      const ownerText = `The task "${task.title}" which was assigned to you is due tomorrow: ${formattedDate}, at ${formattedTime}. If you haven't finished your task, we advise you to go back to work ASAP!`;
+      
+      await sendEmail(task.owner.email, ownerSubject, ownerText);
+    }
+    
+    // For users who can view the task (but aren't the owner)
+    if (task.isPublic || (task.visibleTo && task.visibleTo.length > 0)) {
+      // For public tasks, we'd need to get all users from the database
+      // Or for tasks with specific visibility, use the visibleTo array
+      
+      // This depends on how you want to handle public tasks
+      // For specifically visible tasks:
+      if (!task.isPublic && task.visibleTo && task.visibleTo.length > 0) {
+        for (const user of task.visibleTo) {
+          // Skip if this user is the owner (already notified with urgent message)
+          if (task.owner && user._id.toString() === task.owner._id.toString()) {
+            continue;
+          }
+          
+          const viewerSubject = `Task "${task.title}" is due tomorrow`;
+          const viewerText = `The task "${task.title}" which is visible to you is due tomorrow: ${formattedDate}, at ${formattedTime}.`;
+          
+          await sendEmail(user.email, viewerSubject, viewerText);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error sending due date reminders:', error);
+  }
+};
+
+// General function to send emails
+const sendEmail = async (to, subject, htmlContent) => {
+  const mailOptions = {
+    from: process.env.EMAIL_USERNAME,
+    to: to,
+    subject: subject,
+    html: htmlContent
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Email sent to ${to}:`, info.messageId);
+    return true;
+  } catch (error) {
+    console.error(`Error sending email to ${to}:`, error);
+    throw error;
+  }
+};
+
+// Export the new function
 module.exports = {
   sendPasswordResetEmail, // Export the sendPasswordResetEmail function
-  sendVerificationEmail // Export the sendVerificationEmail function
+  sendVerificationEmail, // Export the sendVerificationEmail function
+  sendDueDateReminders,
+  sendEmail
 };
