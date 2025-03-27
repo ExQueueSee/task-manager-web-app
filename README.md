@@ -1,87 +1,176 @@
 # Task Manager Web App
 
 ## Project Overview
-The Task Manager Web App is a system designed for managing tasks efficiently within an organization. It supports user roles, authentication, task creation, assignment, and workflow management, with optional enhancements for advanced functionality.
+A comprehensive task management system designed for organizations, featuring role-based access control, task lifecycle management, notifications, and user authentication. This web application consists of a Node.js backend and a React frontend.
 
----
+## Features
 
-## 1. User Roles & Authentication
+### 1. User Management & Authentication
+- **User Roles:**
+  - **Admin:** Can manage users, approve signups, create and assign tasks to anyone
+  - **Normal User:** Can create personal tasks and claim unassigned tasks
+- **Authentication:**
+  - Secure signup system with email verification
+  - JWT-based authentication
+  - Password hashing for security
+  - Admin approval workflow for new user registrations
 
-### Roles:
-- **Admin:**
-  - Manages users
-  - Approves new signups
-  - Oversees the system
-  - Manages tasks
-- **Normal User:**
-  - Creates tasks for themselves
-  - Takes unassigned tasks
-  - Can be assigned tasks
+### 2. Task Management
+- **Task Creation:**
+  - Admins can create tasks for anyone or leave them unassigned
+  - Users can create tasks for themselves or leave them unassigned
+- **Task Assignment:**
+  - Users can assign themselves to unassigned tasks
+  - Admins can reassign tasks as needed
+- **Visibility Controls:**
+  - Tasks can be public or private
+  - Visibility can be modified by task owners or admins
 
-### User Authentication & Signup:
-- Signup requires a company email.
-- Email verification system upon signup (or admin approval if verification is not implemented).
-- Secure login system with hashed passwords.
-- Password recovery/reset functionality.
+### 3. Task Properties & Workflow
+- **Task Attributes:**
+  - Title, description, due date, priority
+  - Assignee information
+  - Visibility settings
+- **Status Tracking:**
+  - Open: No user assigned yet
+  - In Progress: Currently being worked on
+  - Behind Schedule: Past due date but still active
+  - Cancelled: Terminated before completion
+  - Closed: Successfully completed
+- **Due Date Notifications:**
+  - Email notifications at various intervals before deadlines
+  - Customizable notification schedule
 
----
+### 4. Technical Implementation
+- **Backend:**
+  - Node.js/Express RESTful API
+  - MongoDB database with Mongoose ODM
+  - JWT-based authentication middleware
+  - Scheduled tasks for notifications
+- **Frontend:**
+  - React-based single-page application
+  - Modern UI with responsive design
+  - API integration for real-time updates
 
-## 2. Task Management
+## Getting Started
 
-### Task Creation & Assignment:
-- **Admin:**
-  - Can create tasks and either:
-    - Assign a task to a user immediately.
-    - Leave a task unassigned for later assignment.
-- **Normal Users:**
-  - Can create tasks only for themselves.
-  - Can leave a task unassigned for others to take.
-- **Any user** can assign themselves to an unassigned task.
+### Prerequisites
+- Node.js (v14.x or higher) and npm
+- MongoDB (v4.x or higher)
+- Git
 
-### Task Visibility & Collaboration:
-- Admin can control task visibility when creating tasks.
-- Visibility settings can be changed after task creation.
-- Users can work on multiple tasks simultaneously.
-- A task can have only one assigned user at a time.
+### Installation
+1. Clone the repository
+   ```bash
+   git clone https://github.com/ExQueueSee/task-manager-web-app.git
+   cd task-manager-web-app
+   ```
 
----
+2. Install backend dependencies:
+   ```bash
+   cd task-manager-backend
+   npm install
+   ```
 
-## 3. Task Properties & Workflow
+3. Install frontend dependencies:
+   ```bash
+   cd ../task-manager-frontend
+   npm install
+   ```
 
-### Due Dates & Notifications:
-- Each task has a due date & time.
-- Users assigned to a task or who can view it receive notifications at:
-  - 2 weeks, 1 week, 3 days, 2 days, 1 day, 12 hours, 6 hours, 3 hours, 1 hour, 30 mins, 10 mins, and 0 mins before the deadline.
+### Database Setup
+1. **Local MongoDB:**
+   ```bash
+   # Install MongoDB (Ubuntu)
+   sudo apt-get install mongodb
 
-### Task Statuses:
-- **Open:** No user assigned yet.
-- **In Progress:** A user is working on it.
-- **Behind Schedule:** Due date has passed, but the task is still active.
-- **Cancelled:** Closed before completion, no further assignments.
-- **Closed:** Completed successfully, no further assignments.
+   # Install MongoDB (macOS with Homebrew)
+   brew tap mongodb/brew
+   brew install mongodb-community
 
----
+   # Start MongoDB service
+   sudo systemctl start mongod    # Linux
+   brew services start mongodb-community    # macOS
+   ```
 
-## 4. Potential Enhancements (Optional Features)
+2. **Using MongoDB Atlas (Cloud):**
+   - Create a free account at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+   - Create a new cluster
+   - Configure network access (whitelist your IP)
+   - Create a database user
+   - Get your connection string from the Connect dialog
+   - Use this connection string in your `.env` file instead of the local MongoDB URI
 
-### Advanced Due Dates:
-- Instead of a single due date, tasks can have:
-  - **Preferred Completion Date:** Early target deadline.
-  - **Final Completion Date:** The hard deadline.
+3. **Using Docker:**
+   ```bash
+   # Pull and run MongoDB container
+   docker pull mongo
+   docker run -d -p 27017:27017 --name task-manager-mongo mongo
+   
+   # Use mongodb://localhost:27017/taskmanager in your .env file
+   ```
 
-### Business Cred System:
-- Users gain/lose credits based on performance:
-  - **+Credit** for completing tasks before the final deadline.
-  - **++Credit** for completing tasks before the preferred deadline.
-  - **-Credit** if a self-assigned task passes its deadline.
-  - **--Credit** if an admin-assigned task passes its deadline.
-  - **+Credit refund** if a late task is cancelled.
+### Configuration
+1. Create a `.env` file in the backend directory:
+   ```bash
+   cd ../task-manager-backend
+   touch .env
+   ```
 
-### Email Verification System:
-- Instead of admin approval, users verify their email when signing up.
+2. Add the following environment variables to the `.env` file:
+   ```
+   PORT=your_choice_of_PORT
+   MONGODB_URI=mongodb://localhost:27017/taskmanager
+   JWT_SECRET=your_jwt_secret_key
+   EMAIL_SERVICE=gmail
+   EMAIL_USER=your_email@gmail.com
+   EMAIL_PASSWORD=your_email_password
+   FRONTEND_URL=http://localhost:3000
+   ```
 
----
+3. Configure email settings for notifications (if using Gmail, you may need to allow less secure apps or use app passwords)
 
-## Conclusion
-This Task Manager Web App ensures structured task allocation, user accountability, and streamlined workflow. With potential enhancements, the system can be further improved to optimize performance and efficiency.
+### Running the Application
+1. Start MongoDB (if running locally):
+   ```bash
+   mongod
+   ```
 
+2. Start the backend server:
+   ```bash
+   cd task-manager-backend
+   npm start
+   ```
+   Or for development with auto-reload:
+   ```bash
+   npm run dev
+   ```
+
+3. Start the frontend development server:
+   ```bash
+   cd ../task-manager-frontend
+   npm start
+   ```
+
+4. Access the application at: http://localhost:3000
+
+### Running Tests
+1. Backend tests:
+   ```bash
+   cd task-manager-backend
+   npm test
+   ```
+
+2. Frontend tests:
+   ```bash
+   cd task-manager-frontend
+   npm test
+   ```
+
+## API Documentation
+API documentation is available through Swagger at the `/api-docs` endpoint when running the backend server (http://localhost:5000/api-docs).
+
+## Deployment
+- The backend can be deployed to services like Heroku, AWS, or DigitalOcean
+- The frontend can be deployed to services like Netlify, Vercel, or GitHub Pages
+- Ensure to update environment variables for production deployment
