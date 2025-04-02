@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const Task = require('../models/Task');
-// Add this line to import the User model
 const User = require('../models/User');
 const { sendDueDateReminders } = require('../utils/emailService');
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
