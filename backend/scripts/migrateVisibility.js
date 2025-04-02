@@ -2,11 +2,8 @@ require('dotenv').config({ path: '../.env' });
 const mongoose = require('mongoose');
 const Task = require('../models/Task');
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+// Connect to MongoDB - remove deprecated options
+mongoose.connect(process.env.MONGO_URI)
 .then(() => console.log('Connected to MongoDB'))
 .catch(err => console.error('MongoDB connection error:', err));
 

@@ -11,10 +11,7 @@ const checkUpcomingDueDates = async () => {
   try {
     // Connect to the database if not already connected
     if (mongoose.connection.readyState !== 1) {
-      await mongoose.connect(process.env.MONGO_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-      });
+      await mongoose.connect(process.env.MONGO_URI);
     }
 
     console.log('Checking for tasks due within 24 hours...');
