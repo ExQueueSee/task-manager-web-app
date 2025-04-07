@@ -1,7 +1,7 @@
 # Task Manager Web App
 
 ## Project Overview
-A comprehensive task management system designed for organizations, featuring role-based access control, task lifecycle management, notifications, and user authentication. This web application consists of a Node.js backend and a React frontend.
+A comprehensive task management system designed for organizations, featuring role-based access control, task lifecycle management, notifications, user authentication, and performance gamification. This web application consists of a Node.js backend and a React frontend.
 
 ## Features
 
@@ -14,6 +14,10 @@ A comprehensive task management system designed for organizations, featuring rol
   - JWT-based authentication
   - Password hashing for security
   - Admin approval workflow for new user registrations
+- **User Profile:**
+  - Personalized dashboard
+  - Profile management with name updates
+  - Secure password change functionality
 
 ### 2. Task Management
 - **Task Creation:**
@@ -32,25 +36,38 @@ A comprehensive task management system designed for organizations, featuring rol
   - Assignee information
   - Visibility settings
 - **Status Tracking:**
-  - Open: No user assigned yet
+  - Available: No user assigned yet
   - In Progress: Currently being worked on
   - Behind Schedule: Past due date but still active
   - Cancelled: Terminated before completion
-  - Closed: Successfully completed
+  - Completed: Successfully finished
 - **Due Date Notifications:**
   - Email notifications at various intervals before deadlines
   - Customizable notification schedule
 
-### 4. Technical Implementation
+### 4. Business Credit System
+- **Performance Gamification:**
+  - Users earn credits for completing tasks on time
+  - More credits awarded for early completion (up to 2 credits)
+  - Credits deducted for missing deadlines
+  - Higher penalties for admin-assigned tasks that are missed
+- **Leaderboard:**
+  - Organization-wide ranking system
+  - Visual distinctions for top performers (gold, silver, bronze)
+  - Motivates timely task completion and healthy competition
+
+### 5. Technical Implementation
 - **Backend:**
   - Node.js/Express RESTful API
   - MongoDB database with Mongoose ODM
   - JWT-based authentication middleware
-  - Scheduled tasks for notifications
+  - Scheduled tasks for notifications and deadline tracking
 - **Frontend:**
   - React-based single-page application
-  - Modern UI with responsive design
+  - Modern UI with Material-UI components
+  - Responsive design for all devices
   - API integration for real-time updates
+  - Interactive dashboards with data visualization
 
 ## Getting Started
 
