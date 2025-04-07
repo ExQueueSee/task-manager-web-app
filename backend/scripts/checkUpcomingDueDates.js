@@ -79,3 +79,67 @@ if (require.main === module) {
       process.exit(1);
     });
 }
+
+// Background job to check for overdue tasks
+async function checkOverdueTasks() {
+  try {
+    const now = new Date();
+    
+    // Find tasks that are:
+    // 1. Not already marked as behind-schedule, completed, or cancelled
+    // 2. Have a due date that's in the past
+    const overdueTasks = await Task.find({
+      status: { $nin: ['behind-schedule', 'completed', 'cancelled'] },
+      dueDate: { $lt: now }
+    }).populate('owner');
+    
+    console.log(`Found ${overdueTasks.length} overdue tasks to update`);
+    
+    for (const task of overdueTasks) {
+      // Mark task as behind schedule
+      task.status = 'behind-schedule';
+      
+      // Apply credit penalty if there's an owner
+      if (task.owner) {
+        const owner = await User.findById(task.owner._id);
+        if (owner) {
+          // Check task history to determine assignment type
+          const taskHistory = task.history || [];
+          const assignmentRecord = taskHistory.find(h => h.action === 'assigned');
+          
+          let creditDeduction = 1; // Default for self-assigned
+          
+          if (assignmentRecord && assignmentRecord.performedBy.toString() !== task.owner._id.toString()) {
+            // Admin-assigned = bigger penalty
+            creditDeduction = 2;
+            console.log(`User ${owner.name} lost 2 credits for missing admin-assigned deadline`);
+          } else {
+            console.log(`User ${owner.name} lost 1 credit for missing self-assigned deadline`);
+          }
+          
+          owner.credits -= creditDeduction;
+          await owner.save();
+        }
+      }
+      
+      // Add to history - FIX: Don't include performedBy if it's a system action
+      if (!task.history) task.history = [];
+      task.history.push({
+        action: 'updated',
+        date: now,
+        // Removed performedBy field since we can't set it to "system" string
+        details: 'Automatically marked as behind schedule'
+      });
+      
+      await task.save();
+    }
+  } catch (error) {
+    console.error('Error checking overdue tasks:', error);
+  }
+}
+
+// Run the checker periodically (every 15 minutes)
+setInterval(checkOverdueTasks, 15 * 60 * 1000);
+
+// Also run it once when the server starts
+checkOverdueTasks();

@@ -9,6 +9,7 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PeopleIcon from '@mui/icons-material/People';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 import { styled } from '@mui/material/styles';
 
 import NavItem from './NavItem';
@@ -204,6 +205,7 @@ const Layout = () => {
               </Typography>
               <NavItem to="/admin/users" icon={<PeopleIcon />} text="User Management" />
               <NavItem to="/admin/tasks" icon={<AssignmentIcon />} text="Task Management" />
+              <NavItem to="/admin/leaderboard" icon={<LeaderboardIcon />} text="Leaderboard" />
             </>
           )}
         </List>

@@ -21,6 +21,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 import GlobalBackground from './components/GlobalBackground';
 import BrandLogo from './components/BrandLogo';
+import AdminLeaderboardPage from './pages/AdminLeaderboardPage';
 
 // Context
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -165,6 +166,7 @@ const AppContent = () => {
                   </ProtectedRoute>
                 } 
               />
+              <Route path="/admin/leaderboard" element={<AdminLeaderboardPage />} />
             </Route>
           </Route>
           

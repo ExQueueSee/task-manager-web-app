@@ -283,6 +283,81 @@ app.patch('/tasks/:id', auth, async (req, res) => {
       }
     }
     
+    // Check if status is being updated to "completed"
+    if (updates.includes('status') && req.body.status === 'completed' && task.status !== 'completed') {
+      // Task is being completed now
+      if (task.owner) {
+        const owner = await User.findById(task.owner);
+        if (owner) {
+          let creditChange = 0;
+          const now = new Date();
+          
+          if (task.dueDate) {
+            const dueDate = new Date(task.dueDate);
+            // If completing before due date
+            if (now < dueDate) {
+              // Calculate days before deadline
+              const daysEarly = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
+              
+              if (daysEarly >= 2) {
+                // Completed well before deadline
+                creditChange = 2; // ++Credit
+              } else {
+                // Completed shortly before deadline
+                creditChange = 1; // +Credit
+              }
+            }
+          }
+          
+          if (creditChange > 0) {
+            console.log(`BEFORE: User ${owner.name} had ${owner.credits} credits`);
+            owner.credits += creditChange;
+            console.log(`AFTER: User ${owner.name} now has ${owner.credits} credits`);
+            await owner.save();
+          }
+        }
+      }
+    }
+    
+    // Check if status is changing to "behind-schedule"
+    if (updates.includes('status') && req.body.status === 'behind-schedule' && 
+        task.status !== 'behind-schedule' && task.status !== 'completed' && 
+        task.status !== 'cancelled') {
+      // Task is becoming overdue
+      if (task.owner) {
+        const owner = await User.findById(task.owner);
+        if (owner) {
+          // Check if task was assigned by admin or self-assigned
+          const taskHistory = task.history || [];
+          const assignmentRecord = taskHistory.find(h => h.action === 'assigned');
+          
+          if (assignmentRecord && assignmentRecord.performedBy.toString() !== task.owner.toString()) {
+            // Admin-assigned task overdue
+            owner.credits -= 2; // --Credit
+          } else {
+            // Self-assigned task overdue
+            owner.credits -= 1; // -Credit
+          }
+          
+          await owner.save();
+        }
+      }
+    }
+    
+    // Check if a late task is being cancelled
+    if (updates.includes('status') && req.body.status === 'cancelled' && 
+        task.status === 'behind-schedule') {
+      // Late task being cancelled
+      if (task.owner) {
+        const owner = await User.findById(task.owner);
+        if (owner) {
+          // Refund one credit for cancelling overdue task
+          owner.credits += 1; // +Credit refund
+          await owner.save();
+        }
+      }
+    }
+    
     // Apply updates
     updates.forEach(update => task[update] = req.body[update]);
     
@@ -298,10 +373,295 @@ app.patch('/tasks/:id', auth, async (req, res) => {
       task.owner = null;
     }
     
+    // Add task history tracking for credit purposes
+    if (!task.history) {
+      task.history = [];
+    }
+    
+    if (updates.includes('owner') && req.body.owner) {
+      task.history.push({
+        action: 'assigned',
+        date: new Date(),
+        performedBy: req.user._id,
+        assignedTo: req.body.owner
+      });
+    }
+    
+    await task.save();
+    res.send(task);
+  } catch (error) { 
+    res.status(400).send(error);
+  }
+});
+
+app.patch('/tasks/:id', auth, async (req, res) => {
+  try {
+    // ...existing validation code...
+    
+    const task = await Task.findOne({ _id: req.params.id });
+    
+    if (!task) {
+      return res.status(404).send({ error: 'Task not found' });
+    }
+    
+    // Track the previous status to detect changes
+    const previousStatus = task.status;
+    
+    // Gather the updates being applied
+    const updates = Object.keys(req.body);
+    
+    // Apply updates to task object
+    updates.forEach(update => task[update] = req.body[update]);
+    
+    // CREDIT SYSTEM LOGIC
+    // 1. Check for task completion
+    if (updates.includes('status') && req.body.status === 'completed' && previousStatus !== 'completed') {
+      // Task is being completed now
+      if (task.owner) {
+        const owner = await User.findById(task.owner);
+        if (owner) {
+          let creditChange = 0;
+          const now = new Date();
+          
+          if (task.dueDate) {
+            const dueDate = new Date(task.dueDate);
+            // If completing before due date
+            if (now < dueDate) {
+              // Calculate days before deadline
+              const daysEarly = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
+              
+              if (daysEarly >= 2) {
+                // Completed well before deadline
+                creditChange = 2; // ++Credit
+              } else {
+                // Completed shortly before deadline
+                creditChange = 1; // +Credit
+              }
+            }
+          }
+          
+          if (creditChange > 0) {
+            console.log(`BEFORE: User ${owner.name} had ${owner.credits} credits`);
+            owner.credits += creditChange;
+            console.log(`AFTER: User ${owner.name} now has ${owner.credits} credits`);
+            await owner.save();
+          }
+        }
+      }
+    }
+    
+    // 2. Check if status is changing to "behind-schedule"
+    if (updates.includes('status') && req.body.status === 'behind-schedule' && 
+        previousStatus !== 'behind-schedule' && previousStatus !== 'completed' && 
+        previousStatus !== 'cancelled') {
+      // Task is becoming overdue
+      if (task.owner) {
+        const owner = await User.findById(task.owner);
+        if (owner) {
+          // Check if task was assigned by admin or self-assigned
+          const taskHistory = task.history || [];
+          const assignmentRecord = taskHistory.find(h => h.action === 'assigned');
+          
+          let creditDeduction = 1; // Default: -1 credit
+          
+          if (assignmentRecord && assignmentRecord.performedBy.toString() !== task.owner.toString()) {
+            // Admin-assigned task overdue = bigger penalty
+            creditDeduction = 2; // --Credit
+            console.log(`User ${owner.name} lost 2 credits for missing admin-assigned deadline`);
+          } else {
+            console.log(`User ${owner.name} lost 1 credit for missing self-assigned deadline`);
+          }
+          
+          owner.credits -= creditDeduction;
+          await owner.save();
+        }
+      }
+    }
+    
+    // 3. Check if a late task is being cancelled
+    if (updates.includes('status') && req.body.status === 'cancelled' && 
+        previousStatus === 'behind-schedule') {
+      // Late task being cancelled
+      if (task.owner) {
+        const owner = await User.findById(task.owner);
+        if (owner) {
+          // Refund one credit for cancelling overdue task
+          owner.credits += 1; // +Credit refund
+          console.log(`User ${owner.name} received 1 credit refund for cancelled late task`);
+          await owner.save();
+        }
+      }
+    }
+    
+    // Update task history
+    if (!task.history) {
+      task.history = [];
+    }
+    
+    // Track assignment changes
+    if (updates.includes('owner') && req.body.owner) {
+      task.history.push({
+        action: 'assigned',
+        date: new Date(),
+        performedBy: req.user._id,
+        assignedTo: req.body.owner
+      });
+    }
+    
+    // Track status changes
+    if (updates.includes('status') && req.body.status !== previousStatus) {
+      task.history.push({
+        action: req.body.status === 'completed' ? 'completed' : 'updated',
+        date: new Date(),
+        performedBy: req.user._id
+      });
+    }
+    
+    // Save the updated task
     await task.save();
     res.send(task);
   } catch (error) {
-    res.status(400).send(error);
+    console.error('Error updating task:', error);
+    res.status(400).send({ error: error.message });
+  }
+});
+
+app.patch('/tasks/:id', auth, async (req, res) => {
+  try {
+    // ...existing validation code...
+    
+    const task = await Task.findOne({ _id: req.params.id });
+    
+    if (!task) {
+      return res.status(404).send({ error: 'Task not found' });
+    }
+    
+    // Track the previous status to detect changes
+    const previousStatus = task.status;
+    
+    // Gather the updates being applied
+    const updates = Object.keys(req.body);
+    
+    // Apply updates to task object
+    updates.forEach(update => task[update] = req.body[update]);
+    
+    // CREDIT SYSTEM LOGIC
+    // 1. Check for task completion
+    if (updates.includes('status') && req.body.status === 'completed' && previousStatus !== 'completed') {
+      // Task is being completed now
+      if (task.owner) {
+        const owner = await User.findById(task.owner);
+        if (owner) {
+          let creditChange = 0;
+          const now = new Date();
+          
+          if (task.dueDate) {
+            const dueDate = new Date(task.dueDate);
+            // If completing before due date
+            if (now < dueDate) {
+              // Calculate days early
+              const daysEarly = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
+              
+              if (daysEarly >= 2) {
+                // Completed well before deadline (++Credit)
+                creditChange = 2;
+                console.log(`User ${owner.name} earned 2 credits for completing task well before deadline`);
+              } else {
+                // Completed shortly before deadline (+Credit)
+                creditChange = 1;
+                console.log(`User ${owner.name} earned 1 credit for completing task before deadline`);
+              }
+            }
+          }
+          
+          if (creditChange > 0) {
+            // Make sure owner.credits exists, initialize if needed
+            if (typeof owner.credits !== 'number') {
+              owner.credits = 0;
+            }
+            console.log(`BEFORE: User ${owner.name} had ${owner.credits} credits`);
+            owner.credits += creditChange;
+            console.log(`AFTER: User ${owner.name} now has ${owner.credits} credits`);
+            await owner.save();
+            console.log(`User ${owner.name} now has ${owner.credits} credits`);
+          }
+        }
+      }
+    }
+    
+    // 2. Check if status is changing to "behind-schedule"
+    if (updates.includes('status') && req.body.status === 'behind-schedule' && 
+        previousStatus !== 'behind-schedule' && previousStatus !== 'completed' && 
+        previousStatus !== 'cancelled') {
+      // Task is becoming overdue
+      if (task.owner) {
+        const owner = await User.findById(task.owner);
+        if (owner) {
+          // Check if task was assigned by admin or self-assigned
+          const taskHistory = task.history || [];
+          const assignmentRecord = taskHistory.find(h => h.action === 'assigned');
+          
+          let creditDeduction = 1; // Default: -1 credit
+          
+          if (assignmentRecord && assignmentRecord.performedBy.toString() !== task.owner.toString()) {
+            // Admin-assigned task overdue = bigger penalty
+            creditDeduction = 2; // --Credit
+            console.log(`User ${owner.name} lost 2 credits for missing admin-assigned deadline`);
+          } else {
+            console.log(`User ${owner.name} lost 1 credit for missing self-assigned deadline`);
+          }
+          
+          owner.credits -= creditDeduction;
+          await owner.save();
+        }
+      }
+    }
+    
+    // 3. Check if a late task is being cancelled
+    if (updates.includes('status') && req.body.status === 'cancelled' && 
+        previousStatus === 'behind-schedule') {
+      // Late task being cancelled
+      if (task.owner) {
+        const owner = await User.findById(task.owner);
+        if (owner) {
+          // Refund one credit for cancelling overdue task
+          owner.credits += 1; // +Credit refund
+          console.log(`User ${owner.name} received 1 credit refund for cancelled late task`);
+          await owner.save();
+        }
+      }
+    }
+    
+    // Update task history
+    if (!task.history) {
+      task.history = [];
+    }
+    
+    // Track assignment changes
+    if (updates.includes('owner') && req.body.owner) {
+      task.history.push({
+        action: 'assigned',
+        date: new Date(),
+        performedBy: req.user._id,
+        assignedTo: req.body.owner
+      });
+    }
+    
+    // Track status changes
+    if (updates.includes('status') && req.body.status !== previousStatus) {
+      task.history.push({
+        action: req.body.status === 'completed' ? 'completed' : 'updated',
+        date: new Date(),
+        performedBy: req.user._id
+      });
+    }
+    
+    // Save the updated task
+    await task.save();
+    res.send(task);
+  } catch (error) {
+    console.error('Error updating task:', error);
+    res.status(400).send({ error: error.message });
   }
 });
 
@@ -866,6 +1226,41 @@ app.delete('/users/:id', auth, adminAuth, async (req, res) => {
     } catch (error) {
       res.status(500).send(error);
     }
+});
+
+
+// Get leaderboard (all users sorted by credits)
+app.get('/users/leaderboard', auth, async (req, res) => {
+  try {
+    // Get users with their credits and names, sorted by credits (descending)
+    const leaderboard = await User.find({})
+      .select('name email credits')
+      .sort({ credits: -1 });
+    
+    res.send(leaderboard);
+  } catch (error) {
+    res.status(500).send({ error: 'Failed to fetch leaderboard' });
+  }
+});
+
+// Get current user's ranking
+app.get('/users/me/rank', auth, async (req, res) => {
+  try {
+    // Count users with more credits than current user
+    const higherRanked = await User.countDocuments({
+      credits: { $gt: req.user.credits }
+    });
+    
+    // User's rank is the number of users with more credits + 1
+    const rank = higherRanked + 1;
+    
+    res.send({ 
+      rank,
+      credits: req.user.credits
+    });
+  } catch (error) {
+    res.status(500).send({ error: 'Failed to fetch ranking' });
+  }
 });
 
 // Error handling middleware

@@ -116,4 +116,12 @@ export const verifyEmail = async (token) => {
   return verifyApi.get(`/users/verify-email/${token}`);
 };
 
+// Get current user's rank and credits
+export const getUserRank = () => api.get('/users/me/rank');
+
+// Get the full leaderboard
+export const getLeaderboard = () => {
+  return api.get('/users/leaderboard');
+};
+
 export default api;

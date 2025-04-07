@@ -61,7 +61,11 @@ const userSchema = new mongoose.Schema({
     },
     resetPasswordExpires: {
         type: Date
-    }
+    },
+    credits: {
+        type: Number,
+        default: 0
+    },
 });
 
 // Pre-save hook to hash password before saving
@@ -154,7 +158,8 @@ userSchema.methods.toJSON = function() {
         name: userObject.name,
         email: userObject.email,
         role: userObject.role,
-        approvalStatus: userObject.approvalStatus
+        approvalStatus: userObject.approvalStatus,
+        credits: userObject.credits,
     };
 };
 

@@ -54,6 +54,25 @@ const taskSchema = new mongoose.Schema({
         type: Boolean,
         default: true
     },
+    // Add this new field to track task history
+    history: [{
+        action: {
+            type: String,
+            enum: ['created', 'assigned', 'updated', 'completed']
+        },
+        date: {
+            type: Date,
+            default: Date.now
+        },
+        performedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        },
+        assignedTo: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        }
+    }],
     // Creation date of the task
     createdAt: {
         type: Date,

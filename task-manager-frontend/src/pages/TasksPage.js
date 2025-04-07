@@ -33,6 +33,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import PersonIcon from '@mui/icons-material/Person';
+import StarIcon from '@mui/icons-material/Star';
 import { useSnackbar } from 'notistack';
 import { format } from 'date-fns';
 import useDocumentTitle from '../hooks/useDocumentTitle.js';
@@ -448,6 +449,23 @@ const TasksPage = () => {
                       <Typography variant="caption" color="text.secondary">
                         Due: {format(new Date(task.dueDate), 'PPp')}
                       </Typography>
+                      
+                      {/* Credit indicator */}
+                      {task.status !== 'completed' && task.status !== 'cancelled' && (
+                        <Tooltip title={
+                          new Date(task.dueDate) > new Date()
+                            ? "Complete before deadline to earn credits"
+                            : "This task is past due and may affect your credits negatively"
+                        }>
+                          <Chip
+                            icon={<StarIcon fontSize="small" />}
+                            label={new Date(task.dueDate) > new Date() ? "+1-2" : "-1"}
+                            size="small"
+                            color={new Date(task.dueDate) > new Date() ? "primary" : "error"}
+                            sx={{ ml: 1 }}
+                          />
+                        </Tooltip>
+                      )}
                     </Box>
                   )}
                   

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -9,13 +9,15 @@ import {
   Avatar,
   Divider,
   Alert,
-  CircularProgress
+  CircularProgress,
+  Chip
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useAuth } from '../context/AuthContext';
 import { useSnackbar } from 'notistack';
-import { updateProfile, updatePassword } from '../api';
+import { updateProfile, updatePassword, getUserRank } from '../api';
 import useDocumentTitle from '../hooks/useDocumentTitle';
+import StarIcon from '@mui/icons-material/Star';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(4),
@@ -47,6 +49,7 @@ const ProfilePage = () => {
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [creditsData, setCreditsData] = useState({ credits: 0, rank: 0 });
 
   const handleChange = (e) => {
     setFormData({
@@ -54,6 +57,19 @@ const ProfilePage = () => {
       [e.target.name]: e.target.value,
     });
   };
+
+  useEffect(() => {
+    const fetchCreditsData = async () => {
+      try {
+        const response = await getUserRank();
+        setCreditsData(response.data);
+      } catch (error) {
+        console.error('Failed to fetch credits data:', error);
+      }
+    };
+    
+    fetchCreditsData();
+  }, []);
 
   // Handle profile info update
   const handleProfileUpdate = async (e) => {
@@ -156,6 +172,20 @@ const ProfilePage = () => {
     <StyledPaper elevation={2}>
       <ProfileAvatar>{getInitials()}</ProfileAvatar>
       
+      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mb: 3 }}>
+        <Chip
+          icon={<StarIcon />}
+          label={`${creditsData.credits} Credits`}
+          color={creditsData.credits > 0 ? "primary" : "default"}
+          variant="outlined"
+        />
+        <Chip
+          label={`Rank #${creditsData.rank}`}
+          color="secondary"
+          variant="outlined"
+        />
+      </Box>
+
       <Typography variant="h4" align="center" gutterBottom>
         My Profile
       </Typography>
