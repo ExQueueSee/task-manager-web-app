@@ -54,7 +54,7 @@ const taskSchema = new mongoose.Schema({
         type: Boolean,
         default: true
     },
-    // Add this new field to track task history
+    //Field to track task history
     history: [{
         action: {
             type: String,

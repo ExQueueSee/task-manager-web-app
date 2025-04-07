@@ -24,7 +24,7 @@ const VerifyEmailPage = () => {
         return;
       }
 
-      // Add a flag to prevent duplicate requests
+      // Flag to prevent duplicate requests
       const hasAttemptedVerification = sessionStorage.getItem(`attempted_verification_${token}`);
       if (hasAttemptedVerification) {
         // Skip verification if already attempted

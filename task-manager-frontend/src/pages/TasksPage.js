@@ -100,7 +100,6 @@ const TasksPage = () => {
     return updatedTasks;
   }, []);
 
-  // Modify your fetchTasks function
   const fetchTasks = React.useCallback(async () => {
     try {
       setLoading(true);
@@ -155,7 +154,6 @@ const TasksPage = () => {
     setOpen(false);
   };
 
-  // Update handleSubmit to properly handle assigned users
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log('isUnassigned on submit:', isUnassigned);
@@ -221,7 +219,6 @@ const TasksPage = () => {
     }
   };
 
-  // Modify your handleStatusChange function to prevent status changes for behind schedule tasks
   const handleStatusChange = async (taskId, newStatus) => {
     try {
       const task = tasks.find(t => t._id === taskId);
@@ -304,13 +301,10 @@ const TasksPage = () => {
     }
   }, [tasks, tabValue, user]);
 
-  // Either utilize the canEditTask function or remove it to avoid the warning.
-  // Here's an implementation that uses it to conditionally enable edit actions:
   const canEditTask = (task) => {
     return isAdmin || (task.owner && task.owner._id === user?._id);
   };
 
-  // Add this to your TasksPage component
   // Set up interval to check for overdue tasks
   useEffect(() => {
     // Check every once in a while for tasks that might have become overdue
