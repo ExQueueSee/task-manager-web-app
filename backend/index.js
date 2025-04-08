@@ -176,7 +176,6 @@ app.get('/tasks/all', auth, adminAuth, async (req, res) => {
   }
 });
 
-// Move this export endpoint BEFORE any /tasks/:id routes
 app.get('/tasks/export', auth, async (req, res) => {
   try {
     console.log('Export request received with filter:', req.query.filter);
@@ -247,7 +246,7 @@ app.get('/tasks/export', auth, async (req, res) => {
   }
 });
 
-// Add this simple test endpoint
+// Test endpoint
 app.get('/test-excel', auth, async (req, res) => {
   try {
     const ExcelJS = require('exceljs');
@@ -272,7 +271,6 @@ app.get('/test-excel', auth, async (req, res) => {
   }
 });
 
-// THEN define dynamic routes with parameters
 /**
  * @swagger
  * /tasks/{id}:
@@ -492,9 +490,7 @@ app.patch('/tasks/:id', auth, async (req, res) => {
 });
 
 app.patch('/tasks/:id', auth, async (req, res) => {
-  try {
-    // ...existing validation code...
-    
+  try {    
     const task = await Task.findOne({ _id: req.params.id });
     
     if (!task) {
@@ -625,7 +621,6 @@ app.patch('/tasks/:id', auth, async (req, res) => {
 
 app.patch('/tasks/:id', auth, async (req, res) => {
   try {
-    // ...existing validation code...
     
     const task = await Task.findOne({ _id: req.params.id });
     
