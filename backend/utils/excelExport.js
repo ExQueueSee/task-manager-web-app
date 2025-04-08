@@ -59,7 +59,7 @@ const generateTasksExcel = async (tasks) => {
           status: task.status || '',
           assignee: assigneeName,
           dueDate: formattedDate,
-          hasAttachment: task.attachment ? 'Yes' : 'No'
+          hasAttachment: (task.attachment && task.attachment.filename) ? 'Yes' : 'No'
         });
       } catch (err) {
         console.error('Error processing task for Excel:', err);
