@@ -78,7 +78,6 @@ const AdminTasksPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  // Update the fetchTasks function to automatically identify behind schedule tasks
   const fetchTasks = async () => {
     setLoading(true);
     try {
@@ -137,7 +136,6 @@ const AdminTasksPage = () => {
     setAssignDialogOpen(false);
   };
 
-  // Modify the handleEditSave function to enforce behind schedule restrictions
   const handleEditSave = async () => {
     try {
       // Find the original task we're editing

@@ -32,19 +32,19 @@ const taskSchema = new mongoose.Schema({
     // Owner of the task (reference to User model)
     owner: {
         type: mongoose.Schema.Types.ObjectId,
-        required: false, // Change this from true to false
+        required: false, // Owner is not required for task creation
         ref: 'User'
     },
     // Due date of the task
     dueDate: {
         type: Date
     },
-    // Add this new field to track the last due date notification
+    // Field to track the last due date notification
     lastDueDateNotification: {
         type: Date,
         default: null
     },
-    // Replace visibility enum with an array
+    // Field to track the last due date notification
     visibleTo: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'

@@ -2,7 +2,7 @@ const nodemailer = require('nodemailer'); // Import nodemailer for sending email
 
 // Create a transporter using Gmail
 const transporter = nodemailer.createTransport({
-  service: 'gmail', // Use Gmail as the email service
+  service: 'gmail', // Use Gmail as the email service (you can also use other services like SendGrid, Mailgun, or others)
   auth: {
     user: process.env.EMAIL_USERNAME, // Your Gmail address from environment variables
     pass: process.env.EMAIL_PASSWORD // Your Gmail password or app password from environment variables
@@ -89,7 +89,7 @@ const sendDueDateReminders = async (task) => {
       // For public tasks, we'd need to get all users from the database
       // Or for tasks with specific visibility, use the visibleTo array
       
-      // This depends on how you want to handle public tasks
+     
       // For specifically visible tasks:
       if (!task.isPublic && task.visibleTo && task.visibleTo.length > 0) {
         for (const user of task.visibleTo) {

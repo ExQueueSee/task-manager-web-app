@@ -20,7 +20,7 @@ import { registerUser } from '../api';
 import useDocumentTitle from '../hooks/useDocumentTitle';
 import { useNavigate } from 'react-router-dom';
 
-// Add this function to validate email format 
+// Function to validate email format 
 const validateEmail = (email) => {
   const companyEmailRegex = /^[a-zA-Z0-9.]+@icterra\.com$/;
   return companyEmailRegex.test(email);

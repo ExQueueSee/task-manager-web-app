@@ -38,7 +38,6 @@ const Dashboard = () => {
   const [userRank, setUserRank] = useState({ rank: 0, credits: 0 });
   const [loadingRank, setLoadingRank] = useState(true);
 
-  // Add "cancelled" to your status colors object wrapped in useMemo
   const statusColors = useMemo(() => ({
   'pending': '#3498db',     // Blue
   'in-progress': '#f39c12', // Orange/amber

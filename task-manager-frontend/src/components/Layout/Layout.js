@@ -15,7 +15,7 @@ import { styled } from '@mui/material/styles';
 import NavItem from './NavItem';
 import { useAuth } from '../../context/AuthContext';
 
-// Define the width of the drawer
+// Width of the drawer
 const drawerWidth = 240;
 
 // Custom styled AppBar component

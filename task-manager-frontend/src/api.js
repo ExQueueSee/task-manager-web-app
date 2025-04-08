@@ -44,11 +44,11 @@ api.interceptors.response.use(
 // Authentication endpoints
 export const registerUser = (userData) => api.post('/users', userData);
 export const loginUser = (email, password) => {
-  // Make sure you're sending the correct data structure
+  // send login request to the backend
   return api.post('/users/login', { email, password });
 };
 export const getUserProfile = () => {
-  // Don't add authorization headers here - let the interceptor handle it
+    // Let the interceptor handle the token
   return api.get('/users/me');
 };
 
@@ -62,8 +62,6 @@ export const createTask = (taskData) => api.post('/tasks', taskData);
 export const updateTask = (taskId, taskData) => api.patch(`/tasks/${taskId}`, taskData);
 
 export const deleteTask = (taskId) => api.delete(`/tasks/${taskId}`);
-
-// Remove the token parameters from these functions and let the interceptor handle authentication
 
 // Admin endpoints
 export const getAllUsers = () => api.get('/users');
@@ -84,7 +82,7 @@ export const updateUserApproval = (userId, approvalStatus) => api.patch(
     { approvalStatus }
 );
 
-// Also update these functions
+// Update user password
 export const updatePassword = async (currentPassword, newPassword) => {
   return api.patch('/users/me/password', { currentPassword, newPassword });
 };
@@ -107,7 +105,6 @@ export const resetPassword = (token, password) => {
   return api.post('/users/reset-password', { token, password });
 };
 
-// Add this new function to your API file
 
 // Verify email with token
 export const verifyEmail = async (token) => {
@@ -126,7 +123,7 @@ export const getLeaderboard = () => {
 
 export const exportTasks = async (filterType) => {
   try {
-    // Use axios with responseType: 'blob' for binary data
+    // Axios with responseType: 'blob' for binary data
     const response = await api.get(`/tasks/export?filter=${filterType}`, {
       responseType: 'blob'
     });

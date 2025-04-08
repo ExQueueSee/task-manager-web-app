@@ -51,14 +51,14 @@ const Login = () => {
                 console.log('Setting pending approval status');
                 setPendingApproval(); // Set the special state
                 
-                // Use a more forceful navigation approach
+                // Forceful navigation approach
                 window.location.href = '/pending-approval';
                 return; // Return early
             } else if (error.response.data.approvalStatus === 'declined') {
                 console.log('Setting declined approval status');
                 setDeclinedApproval();
                 
-                // Use a more forceful navigation approach
+                // Forceful navigation approach
                 window.location.href = '/registration-declined';
                 return; // Return early
             } else {

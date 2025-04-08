@@ -33,7 +33,7 @@ const generateTasksExcel = async (tasks) => {
           } else if (typeof task.owner === 'string') {
             assigneeName = 'User ID: ' + task.owner;
           }
-          // Add this check for MongoDB ObjectIDs
+          // Check for MongoDB ObjectIDs
           if (task.owner && typeof task.owner === 'object') {
             if (task.owner.name) {
               assigneeName = task.owner.name;

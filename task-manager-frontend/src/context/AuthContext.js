@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { getUserProfile } from '../api';
 
-// Create a context for authentication
+// Context for authentication
 const AuthContext = createContext();
 
 // Custom hook to use the AuthContext
@@ -152,8 +152,8 @@ export const AuthProvider = ({ children }) => {
       loading,
       isAuthenticated: !!token,
       isAdmin: user?.role === 'admin',
-      setToken,  // Make sure these are exposed
-      setUser,    // Make sure these are exposed
+      setToken,  
+      setUser,   
       approvalStatus,
       setPendingApproval,
       setDeclinedApproval,

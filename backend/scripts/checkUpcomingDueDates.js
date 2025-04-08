@@ -20,7 +20,7 @@ const checkUpcomingDueDates = async () => {
     const tomorrow = new Date();
     tomorrow.setDate(now.getDate() + 1);
 
-    // Modified query to only find tasks that:
+    // Query to only find tasks that:
     // 1. Have a due date that falls between now and 24 hours from now
     // 2. Are in pending or in-progress status
     // 3. Haven't been notified yet (lastDueDateNotification is null) OR were notified more than 24 hours ago
@@ -122,7 +122,6 @@ async function checkOverdueTasks() {
         }
       }
       
-      // Add to history - FIX: Don't include performedBy if it's a system action
       if (!task.history) task.history = [];
       task.history.push({
         action: 'updated',
