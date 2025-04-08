@@ -214,7 +214,7 @@ API documentation is available through Swagger at the `/api-docs` endpoint when 
 ![Image](https://github.com/user-attachments/assets/7ed3d841-4602-45cf-9e1f-77fa46786a29)
 
 ### Task Management Page (admin)
-![Image](https://github.com/user-attachments/assets/669817f5-5b99-454b-8aa6-44dc052d9133)
+![Image](https://github.com/user-attachments/assets/a25af3b3-444c-497b-9be3-80e5def4b9f6)
 
 ### Leaderboard Page (admin)
 ![Image](https://github.com/user-attachments/assets/676fd817-014a-4b23-8268-95ae697b6e99)
