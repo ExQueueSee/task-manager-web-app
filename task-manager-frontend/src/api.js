@@ -57,7 +57,46 @@ export const getTasks = () => api.get('/tasks');
 
 export const getTaskById = (taskId) => api.get(`/tasks/${taskId}`);
 
-export const createTask = (taskData) => api.post('/tasks', taskData);
+/**
+ * Creates a new task with optional file attachment
+ * @param {Object} taskData - Task data object
+ * @param {File} attachment - Optional file attachment
+ * @param {string} token - Authentication token
+ * @returns {Promise} - API response
+ */
+export const createTask = async (taskData, attachment, token) => {
+  if (attachment) {
+    // Use FormData for file upload
+    const formData = new FormData();
+    
+    // Add task data
+    Object.keys(taskData).forEach(key => {
+      if (key === 'visibleTo' && Array.isArray(taskData[key])) {
+        taskData[key].forEach(id => formData.append('visibleTo[]', id));
+      } else {
+        formData.append(key, taskData[key]);
+      }
+    });
+    
+    // Add file attachment
+    formData.append('attachment', attachment);
+    
+    // Send request with token
+    return api.post('/tasks', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${token}`
+      }
+    });
+  } else {
+    // Send request without file attachment
+    return api.post('/tasks', taskData, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+  }
+};
 
 export const updateTask = (taskId, taskData) => api.patch(`/tasks/${taskId}`, taskData);
 
