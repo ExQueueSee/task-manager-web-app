@@ -821,7 +821,6 @@ app.patch('/tasks/:id/visibility', auth, async (req, res) => {
   }
 });
 
-// Then define all your parameterized routes like /tasks/:id
 
 // USER ROUTES
 // Registration and login first

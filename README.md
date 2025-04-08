@@ -206,10 +206,10 @@ API documentation is available through Swagger at the `/api-docs` endpoint when 
 ![Image](https://github.com/user-attachments/assets/7ed3d841-4602-45cf-9e1f-77fa46786a29)
 
 ### Task Management Page (admin)
-![Image](https://github.com/user-attachments/assets/5c554387-44ed-44c8-8712-602e9203a945)
+![Image](https://github.com/user-attachments/assets/669817f5-5b99-454b-8aa6-44dc052d9133)
 
 ### Leaderboard Page (admin)
 ![Image](https://github.com/user-attachments/assets/676fd817-014a-4b23-8268-95ae697b6e99)
 
 ### Tasks Page (regular user)
-![Image](https://github.com/user-attachments/assets/94cb4812-e7b3-4c6d-9a62-0c7d8de7a1ba)
+![Image](https://github.com/user-attachments/assets/04bf2550-6c09-42db-a008-4e2e3704480d)
