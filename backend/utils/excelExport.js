@@ -16,7 +16,8 @@ const generateTasksExcel = async (tasks) => {
       { header: 'Description', key: 'description', width: 50 },
       { header: 'Status', key: 'status', width: 15 },
       { header: 'Assignee', key: 'assignee', width: 20 },
-      { header: 'Due Date', key: 'dueDate', width: 20 }
+      { header: 'Due Date', key: 'dueDate', width: 20 },
+      { header: 'Has Attachment', key: 'hasAttachment', width: 15 } // Add this
     ];
     
     // Add style to header row
@@ -57,7 +58,8 @@ const generateTasksExcel = async (tasks) => {
           description: task.description || '',
           status: task.status || '',
           assignee: assigneeName,
-          dueDate: formattedDate
+          dueDate: formattedDate,
+          hasAttachment: task.attachment ? 'Yes' : 'No'
         });
       } catch (err) {
         console.error('Error processing task for Excel:', err);
