@@ -4,13 +4,14 @@ import {
   TableContainer, TableHead, TableRow, Chip, IconButton,
   Button, Dialog, DialogActions, DialogContent, DialogTitle,
   TextField, MenuItem, Select, FormControl, InputLabel, Box,
-  FormControlLabel, Checkbox, Menu
+  FormControlLabel, Checkbox, Menu, Tooltip
 } from '@mui/material';
 import { 
   Edit as EditIcon, 
   Delete as DeleteIcon,
   PersonAdd as AssignIcon,
-  FileDownload as FileDownloadIcon
+  FileDownload as FileDownloadIcon,
+  Attachment as AttachmentIcon
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -317,6 +318,41 @@ const AdminTasksPage = () => {
     handleExportClose();
   };
 
+  // Add this function to handle downloads
+  const handleDownloadAttachment = async (taskId, filename) => {
+    try {
+      const response = await fetch(`http://localhost:3000/tasks/${taskId}/attachment`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to download attachment');
+      }
+      
+      // Create a blob from the response
+      const blob = await response.blob();
+      
+      // Create a download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename || 'attachment';
+      document.body.appendChild(a);
+      a.click();
+      
+      // Clean up
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      enqueueSnackbar('Downloading attachment...', { variant: 'success' });
+    } catch (error) {
+      console.error('Download error:', error);
+      enqueueSnackbar('Failed to download attachment', { variant: 'error' });
+    }
+  };
+
   return (
     <Paper 
       sx={{ 
@@ -410,13 +446,14 @@ const AdminTasksPage = () => {
               <TableCell>Status</TableCell>
               <TableCell>Assigned To</TableCell>
               <TableCell>Due Date</TableCell>
+              <TableCell>Attachment</TableCell>  {/* Add this new column */}
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} align="center">Loading tasks...</TableCell>
+                <TableCell colSpan={7} align="center">Loading tasks...</TableCell>
               </TableRow>
             ) : tasks.map(task => (
               <TableRow key={task._id}>
@@ -449,6 +486,22 @@ const AdminTasksPage = () => {
                 </TableCell>
                 <TableCell>
                   {task.dueDate ? new Date(task.dueDate).toLocaleString() : 'No due date'}
+                </TableCell>
+                <TableCell>
+                  {task.attachment && (
+                    <Tooltip title="Download Attachment">
+                      <IconButton
+                        size="small"
+                        color="primary"
+                        onClick={() => handleDownloadAttachment(
+                          task._id,
+                          task.attachment.filename || 'attachment'
+                        )}
+                      >
+                        <AttachmentIcon />
+                      </IconButton>
+                    </Tooltip>
+                  )}
                 </TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', gap: 1 }}>
