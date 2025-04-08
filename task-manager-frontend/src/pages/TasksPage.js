@@ -36,6 +36,7 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import PersonIcon from '@mui/icons-material/Person';
 import StarIcon from '@mui/icons-material/Star';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import AttachmentIcon from '@mui/icons-material/Attachment';
 import { useSnackbar } from 'notistack';
 import { format } from 'date-fns';
 import useDocumentTitle from '../hooks/useDocumentTitle.js';
@@ -372,6 +373,38 @@ const TasksPage = () => {
     handleExportClose();
   };
 
+  const handleDownloadAttachment = async (taskId, filename) => {
+    try {
+      const response = await fetch(`http://localhost:3000/tasks/${taskId}/attachment`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to download attachment');
+      }
+      
+      // Create a blob from the response
+      const blob = await response.blob();
+      
+      // Create a download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename || 'attachment';
+      document.body.appendChild(a);
+      a.click();
+      
+      // Clean up
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+    } catch (error) {
+      enqueueSnackbar('Failed to download attachment', { variant: 'error' });
+    }
+  };
+
   return (
     <Paper sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -628,6 +661,16 @@ const TasksPage = () => {
                   )}
                   
                   {/* For OTHERS' tasks: Just show who owns it (the UI already shows this in the card content) */}
+                  {task.attachment && (
+                    <IconButton
+                      size="small"
+                      color="primary"
+                      title="Download Attachment"
+                      onClick={() => handleDownloadAttachment(task._id, task.attachment.filename)}
+                    >
+                      <AttachmentIcon />
+                    </IconButton>
+                  )}
                 </CardActions>
               </Card>
             </Grid>
