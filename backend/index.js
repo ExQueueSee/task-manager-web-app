@@ -16,6 +16,7 @@ const { auth, adminAuth } = require('./middleware/auth');
 const cron = require('node-cron');
 const checkUpcomingDueDates = require('./scripts/checkUpcomingDueDates');
 const { generateTasksExcel } = require('./utils/excelExport');
+const upload = require('./middleware/fileUpload');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -87,7 +88,7 @@ app.get('/', (req, res) => {
  *       400:
  *         description: Bad request
  */
-app.post('/tasks', auth, async (req, res) => {
+app.post('/tasks', auth, upload.single('attachment'), async (req, res) => {
   try {
     const taskData = { ...req.body };
 
@@ -114,9 +115,26 @@ app.post('/tasks', auth, async (req, res) => {
       taskData.owner = req.user._id;
     }
 
+    // Add attachment if a file was uploaded
+    if (req.file) {
+      taskData.attachment = {
+        filename: req.file.originalname,
+        contentType: req.file.mimetype,
+        data: req.file.buffer,
+        size: req.file.size
+      };
+    }
+
     const task = new Task(taskData);
     await task.save();
-    res.status(201).send(task);
+    
+    // Return the task but without the attachment data to keep response size small
+    const taskToReturn = task.toObject();
+    if (taskToReturn.attachment) {
+      delete taskToReturn.attachment.data;
+    }
+    
+    res.status(201).send(taskToReturn);
   } catch (error) {
     console.error('Error creating task:', error);
     res.status(400).send(error);
@@ -821,6 +839,34 @@ app.patch('/tasks/:id/visibility', auth, async (req, res) => {
   }
 });
 
+// Add a new endpoint to download attachment
+app.get('/tasks/:id/attachment', auth, async (req, res) => {
+  try {
+    const task = await Task.findById(req.params.id);
+    
+    if (!task || !task.attachment || !task.attachment.data) {
+      return res.status(404).send({ error: 'Attachment not found' });
+    }
+    
+    // Check if user has permission to access this task
+    const canAccess = task.isPublic || 
+                     (task.owner && task.owner.equals(req.user._id)) ||
+                     (task.visibleTo && task.visibleTo.includes(req.user._id)) ||
+                     req.user.role === 'admin';
+    
+    if (!canAccess) {
+      return res.status(403).send({ error: 'Not authorized to access this attachment' });
+    }
+    
+    // Set response headers and send file
+    res.set('Content-Type', task.attachment.contentType);
+    res.set('Content-Disposition', `attachment; filename="${task.attachment.filename}"`);
+    res.send(task.attachment.data);
+    
+  } catch (error) {
+    res.status(500).send({ error: 'Error downloading attachment' });
+  }
+});
 
 // USER ROUTES
 // Registration and login first
