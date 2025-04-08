@@ -73,6 +73,17 @@ const taskSchema = new mongoose.Schema({
             ref: 'User'
         }
     }],
+    // Add attachment field
+    attachment: {
+        filename: String,
+        contentType: String,
+        data: Buffer,
+        size: Number,
+        uploadedAt: {
+            type: Date,
+            default: Date.now
+        }
+    },
     // Creation date of the task
     createdAt: {
         type: Date,
