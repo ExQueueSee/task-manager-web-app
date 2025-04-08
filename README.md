@@ -29,6 +29,12 @@ A comprehensive task management system designed for organizations, featuring rol
 - **Visibility Controls:**
   - Tasks can be public or private
   - Visibility can be modified by task owners or admins
+- **Excel Export:**
+  - Export tasks to Excel spreadsheets with comprehensive filtering options
+  - Download options include "All Tasks", "My Tasks", "Available Tasks", "In Progress Tasks", "Completed Tasks", "Cancelled Tasks", and "Behind Schedule Tasks"
+  - Admins can export any task regardless of visibility settings
+  - Regular users can only export tasks they have permission to view
+  - Exports include task name, description, status, assignee, and due date
 
 ### 3. Task Properties & Workflow
 - **Task Attributes:**
@@ -62,12 +68,14 @@ A comprehensive task management system designed for organizations, featuring rol
   - MongoDB database with Mongoose ODM
   - JWT-based authentication middleware
   - Scheduled tasks for notifications and deadline tracking
+  - Excel generation for task data export
 - **Frontend:**
   - React-based single-page application
   - Modern UI with Material-UI components
   - Responsive design for all devices
   - API integration for real-time updates
   - Interactive dashboards with data visualization
+  - Export functionality for downloading task data
 
 ## Getting Started
 
@@ -213,3 +221,4 @@ API documentation is available through Swagger at the `/api-docs` endpoint when 
 
 ### Tasks Page (regular user)
 ![Image](https://github.com/user-attachments/assets/04bf2550-6c09-42db-a008-4e2e3704480d)
+````
