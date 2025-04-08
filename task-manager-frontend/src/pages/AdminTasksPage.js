@@ -488,20 +488,21 @@ const AdminTasksPage = () => {
                   {task.dueDate ? new Date(task.dueDate).toLocaleString() : 'No due date'}
                 </TableCell>
                 <TableCell>
-                  {task.attachment && (
-                    <Tooltip title="Download Attachment">
+                  <Tooltip title={(task.attachment && task.attachment.filename) ? "Download Attachment" : "No attachment available"}>
+                    <span>
                       <IconButton
                         size="small"
-                        color="primary"
-                        onClick={() => handleDownloadAttachment(
+                        color={(task.attachment && task.attachment.filename) ? "primary" : "default"}
+                        onClick={(task.attachment && task.attachment.filename) ? () => handleDownloadAttachment(
                           task._id,
-                          task.attachment.filename || 'attachment'
-                        )}
+                          task.attachment.filename
+                        ) : undefined}
+                        disabled={!(task.attachment && task.attachment.filename)}
                       >
                         <AttachmentIcon />
                       </IconButton>
-                    </Tooltip>
-                  )}
+                    </span>
+                  </Tooltip>
                 </TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', gap: 1 }}>

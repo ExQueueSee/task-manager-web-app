@@ -67,12 +67,12 @@ const TasksPage = () => {
   useDocumentTitle('Tasks');
   const { token, isAdmin, user } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
-  
+
   // Task states
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tabValue, setTabValue] = useState(0);
-  
+
   // Form states
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
@@ -91,16 +91,16 @@ const TasksPage = () => {
     const now = new Date();
     const updatedTasks = tasksList.map(task => {
       // Check if task has due date and is overdue
-      if (task.dueDate && new Date(task.dueDate) < now && 
-          task.status !== 'completed' && 
-          task.status !== 'cancelled' &&
-          task.status !== 'behind-schedule') {
+      if (task.dueDate && new Date(task.dueDate) < now &&
+        task.status !== 'completed' &&
+        task.status !== 'cancelled' &&
+        task.status !== 'behind-schedule') {
         // Automatically update the status on the UI
         return { ...task, status: 'behind-schedule' };
       }
       return task;
     });
-    
+
     return updatedTasks;
   }, []);
 
@@ -160,7 +160,7 @@ const TasksPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
       let taskData = {
         title,
@@ -168,7 +168,7 @@ const TasksPage = () => {
         dueDate,
         visibility: visibility || 'public'
       };
-      
+
       // Handle task assignment
       if (isUnassigned) {
         // If unassigned checkbox is checked, don't include owner field
@@ -182,7 +182,7 @@ const TasksPage = () => {
         taskData.owner = user._id;
         taskData.status = 'in-progress';
       }
-      
+
       if (editMode) {
         // Can't upload file when editing (according to requirements)
         await updateTask(editId, taskData, token);
@@ -192,7 +192,7 @@ const TasksPage = () => {
         await createTask(taskData, attachmentFile, token);
         enqueueSnackbar('Task created successfully', { variant: 'success' });
       }
-      
+
       handleCloseDialog();
       fetchTasks();
       setAttachmentFile(null); // Reset file state
@@ -227,36 +227,36 @@ const TasksPage = () => {
   const handleStatusChange = async (taskId, newStatus) => {
     try {
       const task = tasks.find(t => t._id === taskId);
-      
+
       if (!task) return;
-      
+
       // Check if task is behind schedule
       const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
       const isBehindSchedule = task.status === 'behind-schedule';
-      
+
       if ((isOverdue || isBehindSchedule) && !isAdmin) {
-        enqueueSnackbar('Task is behind schedule. Status can only be modified by an admin.', { 
-          variant: 'warning' 
+        enqueueSnackbar('Task is behind schedule. Status can only be modified by an admin.', {
+          variant: 'warning'
         });
         return;
       }
-      
+
       // For admin users with behind schedule tasks
       if ((isOverdue || isBehindSchedule) && isAdmin && newStatus !== 'cancelled') {
-        enqueueSnackbar('Behind schedule tasks can only be cancelled. To enable other statuses, please update the due date first.', { 
-          variant: 'warning' 
+        enqueueSnackbar('Behind schedule tasks can only be cancelled. To enable other statuses, please update the due date first.', {
+          variant: 'warning'
         });
         return;
       }
-      
+
       await updateTask(taskId, { status: newStatus }, token);
-      
+
       if (newStatus === 'pending') {
         enqueueSnackbar('Task is now available for others to take', { variant: 'info' });
       } else {
         enqueueSnackbar(`Task status updated to ${statusLabels[newStatus]}`, { variant: 'success' });
       }
-      
+
       fetchTasks();
     } catch (error) {
       enqueueSnackbar('Failed to update task status', { variant: 'error' });
@@ -282,7 +282,7 @@ const TasksPage = () => {
       setAssignedUser('');  // Clear selected user when making unassigned
     }
   }, [isUnassigned]);
-  
+
 
   // Filter tasks based on tab
   const filteredTasks = React.useMemo(() => {
@@ -290,13 +290,13 @@ const TasksPage = () => {
       case 0: // All
         return tasks;
       case 1: // My Tasks (assigned to current user)
-        return tasks.filter(task => 
-          task.owner?._id === user?._id && 
+        return tasks.filter(task =>
+          task.owner?._id === user?._id &&
           task.status !== 'completed'
         );
       case 2: // Available Tasks (unassigned/pending)
-        return tasks.filter(task => 
-          (!task.owner || task.owner === null) && 
+        return tasks.filter(task =>
+          (!task.owner || task.owner === null) &&
           task.status === 'pending'
         );
       case 3: // Completed
@@ -317,10 +317,10 @@ const TasksPage = () => {
       setTasks(prevTasks => {
         const now = new Date();
         return prevTasks.map(task => {
-          if (task.dueDate && new Date(task.dueDate) < now && 
-              task.status !== 'completed' && 
-              task.status !== 'cancelled' &&
-              task.status !== 'behind-schedule') {
+          if (task.dueDate && new Date(task.dueDate) < now &&
+            task.status !== 'completed' &&
+            task.status !== 'cancelled' &&
+            task.status !== 'behind-schedule') {
             // If found any newly overdue task, fetch fresh data from server
             fetchTasks();
             return task; // Original return since fetchTasks will update state
@@ -329,7 +329,7 @@ const TasksPage = () => {
         });
       });
     }, 5000); // Check every 5 sec
-    
+
     return () => clearInterval(interval);
   }, [fetchTasks]);
 
@@ -361,14 +361,14 @@ const TasksPage = () => {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to download attachment');
       }
-      
+
       // Create a blob from the response
       const blob = await response.blob();
-      
+
       // Create a download link
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -376,12 +376,14 @@ const TasksPage = () => {
       a.download = filename || 'attachment';
       document.body.appendChild(a);
       a.click();
-      
+
       // Clean up
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      
+
+      enqueueSnackbar('Downloading attachment...', { variant: 'success' });
     } catch (error) {
+      console.error('Download error:', error);
       enqueueSnackbar('Failed to download attachment', { variant: 'error' });
     }
   };
@@ -402,7 +404,7 @@ const TasksPage = () => {
           >
             Add New Task
           </Button>
-          
+
           <Button
             variant="outlined"
             color="primary"
@@ -455,11 +457,11 @@ const TasksPage = () => {
         <Grid container spacing={3}>
           {filteredTasks.map(task => (
             <Grid item xs={12} sm={6} md={4} key={task._id}>
-              <Card 
-                variant="outlined" 
-                sx={{ 
-                  height: '100%', 
-                  display: 'flex', 
+              <Card
+                variant="outlined"
+                sx={{
+                  height: '100%',
+                  display: 'flex',
                   flexDirection: 'column',
                   position: 'relative',
                   overflow: 'visible',
@@ -485,48 +487,48 @@ const TasksPage = () => {
                 }}
               >
                 {/* Status bar at the top of the card */}
-                <Box 
-                  sx={{ 
-                    height: '5px', 
-                    width: '100%', 
-                    backgroundColor: 
-                      task.status === 'completed' ? '#4caf50' : 
-                      task.status === 'in-progress' ? '#ff9800' : 
-                      task.status === 'behind-schedule' ? '#9b59b6' :
-                      task.status === 'cancelled' ? '#f44336' : 
-                      '#2196f3',
+                <Box
+                  sx={{
+                    height: '5px',
+                    width: '100%',
+                    backgroundColor:
+                      task.status === 'completed' ? '#4caf50' :
+                        task.status === 'in-progress' ? '#ff9800' :
+                          task.status === 'behind-schedule' ? '#9b59b6' :
+                            task.status === 'cancelled' ? '#f44336' :
+                              '#2196f3',
                     borderTopLeftRadius: 'inherit',
                     borderTopRightRadius: 'inherit',
-                  }} 
+                  }}
                 />
-                
+
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                     <Typography variant="h6" component="div" noWrap>
                       {task.title}
                     </Typography>
-                    <Chip 
-                      label={statusLabels[task.status]} 
-                      size="small" 
-                      sx={{ 
+                    <Chip
+                      label={statusLabels[task.status]}
+                      size="small"
+                      sx={{
                         bgcolor: task.status === 'behind-schedule' ? '#9b59b6' : undefined,
                         color: task.status === 'behind-schedule' ? 'white' : undefined
                       }}
-                      color={statusColors[task.status] || 'default'} 
+                      color={statusColors[task.status] || 'default'}
                     />
                   </Box>
-                  
+
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                     {task.description}
                   </Typography>
-                  
+
                   {task.dueDate && (
                     <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
                       <AccessTimeIcon fontSize="small" sx={{ mr: 0.5, color: 'text.secondary' }} />
                       <Typography variant="caption" color="text.secondary">
                         Due: {format(new Date(task.dueDate), 'PPp')}
                       </Typography>
-                      
+
                       {/* Credit indicator */}
                       {task.status !== 'completed' && task.status !== 'cancelled' && (
                         <Tooltip title={
@@ -545,7 +547,7 @@ const TasksPage = () => {
                       )}
                     </Box>
                   )}
-                  
+
                   {task.owner && (
                     <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
                       <PersonIcon fontSize="small" sx={{ mr: 0.5, color: 'text.secondary' }} />
@@ -555,14 +557,14 @@ const TasksPage = () => {
                     </Box>
                   )}
                 </CardContent>
-                
+
                 <CardActions>
                   {/* These buttons are visible based on permissions */}
                   <Box>
                     <Tooltip title={canEditTask(task) ? "Edit" : "You cannot edit this task"}>
                       <span>
-                        <IconButton 
-                          size="small" 
+                        <IconButton
+                          size="small"
                           onClick={() => handleOpenDialog(task)}
                           disabled={!canEditTask(task)}
                         >
@@ -576,7 +578,7 @@ const TasksPage = () => {
                       </IconButton>
                     </Tooltip>
                   </Box>
-                  
+
                   {/* For UNASSIGNED tasks: Show Take Task button */}
                   {(!task.owner || task.owner === null) && task.status === 'pending' && (
                     <Button
@@ -589,7 +591,7 @@ const TasksPage = () => {
                       Take Task
                     </Button>
                   )}
-                  
+
                   {/* For YOUR tasks: Show status dropdown */}
                   {task.owner && task.owner._id === user?._id && (
                     <FormControl size="small" sx={{ minWidth: 120 }}>
@@ -625,11 +627,11 @@ const TasksPage = () => {
                         {isAdmin && (
                           <MenuItem value="behind-schedule">
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <Chip 
-                                size="small" 
-                                label={STATUS_LABELS["behind-schedule"]} 
-                                color={STATUS_COLORS["behind-schedule"]} 
-                                sx={{ 
+                              <Chip
+                                size="small"
+                                label={STATUS_LABELS["behind-schedule"]}
+                                color={STATUS_COLORS["behind-schedule"]}
+                                sx={{
                                   bgcolor: STATUS_HEX_COLORS["behind-schedule"],
                                   color: 'white'
                                 }}
@@ -640,17 +642,24 @@ const TasksPage = () => {
                       </Select>
                     </FormControl>
                   )}
-                  
+
                   {/* For OTHERS' tasks: Just show who owns it (the UI already shows this in the card content) */}
                   {task.attachment && (
-                    <IconButton
-                      size="small"
-                      color="primary"
-                      title="Download Attachment"
-                      onClick={() => handleDownloadAttachment(task._id, task.attachment.filename)}
-                    >
-                      <AttachmentIcon />
-                    </IconButton>
+                    <Tooltip title={(task.attachment && task.attachment.filename) ? "Download Attachment" : "No attachment available"}>
+                      <span>
+                        <IconButton
+                          size="small"
+                          color={(task.attachment && task.attachment.filename) ? "primary" : "default"}
+                          onClick={(task.attachment && task.attachment.filename) ? () => handleDownloadAttachment(
+                            task._id,
+                            task.attachment.filename
+                          ) : undefined}
+                          disabled={!(task.attachment && task.attachment.filename)}
+                        >
+                          <AttachmentIcon />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
                   )}
                 </CardActions>
               </Card>
@@ -728,15 +737,15 @@ const TasksPage = () => {
             )}
             <FormControlLabel
               control={
-                <Checkbox 
-                  checked={isUnassigned} 
+                <Checkbox
+                  checked={isUnassigned}
                   onChange={(e) => {
                     setIsUnassigned(e.target.checked);
                     if (e.target.checked) {
                       // When checking unassigned, clear any selected user
                       setAssignedUser('');
                     }
-                  }} 
+                  }}
                 />
               }
               label="Create as unassigned task (available for anyone to take)"
