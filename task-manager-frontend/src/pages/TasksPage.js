@@ -83,6 +83,7 @@ const TasksPage = () => {
   const [visibility, setVisibility] = useState('public');
   const [isUnassigned, setIsUnassigned] = useState(false);
   const [allUsers, setAllUsers] = useState([]);
+  const [attachmentFile, setAttachmentFile] = useState(null);
 
   // Function to check and update tasks that are behind schedule
   const checkBehindScheduleTasks = useCallback((tasksList) => {
@@ -158,8 +159,7 @@ const TasksPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('isUnassigned on submit:', isUnassigned);
-
+    
     try {
       let taskData = {
         title,
@@ -182,19 +182,40 @@ const TasksPage = () => {
         taskData.status = 'in-progress';
       }
       
+      // Create FormData
+      const formData = new FormData();
+      
+      // Append task data
+      Object.keys(taskData).forEach(key => {
+        formData.append(key, taskData[key]);
+      });
+      
+      // Add file if selected
+      if (attachmentFile) {
+        formData.append('attachment', attachmentFile);
+      }
+      
       if (editMode) {
+        // Can't upload file when editing (according to requirements)
         await updateTask(editId, taskData, token);
         enqueueSnackbar('Task updated successfully', { variant: 'success' });
       } else {
-        await createTask(taskData, token);
+        // Use api with FormData for file upload
+        await fetch('http://localhost:3000/tasks', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        });
         enqueueSnackbar('Task created successfully', { variant: 'success' });
       }
       
       handleCloseDialog();
       fetchTasks();
+      setAttachmentFile(null); // Reset file state
     } catch (error) {
       enqueueSnackbar(editMode ? 'Failed to update task' : 'Failed to create task', { variant: 'error' });
-      console.error('Error with task:', error);
     }
   };
 
@@ -696,6 +717,12 @@ const TasksPage = () => {
               }
               label="Create as unassigned task (available for anyone to take)"
             />
+            <Box sx={{ mt: 2 }}>
+              <input
+                type="file"
+                onChange={(e) => setAttachmentFile(e.target.files[0])}
+              />
+            </Box>
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseDialog}>Cancel</Button>
