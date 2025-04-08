@@ -155,31 +155,38 @@ app.post('/tasks', auth, upload.single('attachment'), async (req, res) => {
  */
 app.get('/tasks', auth, async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    
     // Build query based on visibility and ownership
     const query = {
-        $or: [
-            // Tasks created by this user
-            { owner: req.user._id },
-            // Public tasks visible to all
-            { isPublic: true },
-            // Tasks where current user is in visibleTo array
-            { visibleTo: req.user._id }
-        ]
+      $or: [
+        { owner: req.user._id },
+        { isPublic: true },
+        { visibleTo: req.user._id }
+      ]
     };
     
-    // Admin can see all tasks
-    if (req.user.role === 'admin') {
-        // Remove the query restrictions for admins
-        const tasks = await Task.find({}).populate('owner', 'name email');
-        return res.status(200).send(tasks);
-    }
+    // Count total documents for pagination info
+    const total = await Task.countDocuments(query);
     
     // Use select to exclude attachment.data
     const tasks = await Task.find(query)
       .select('-attachment.data')
-      .populate('owner', 'name email');
-      
-    res.status(200).send(tasks);
+      .populate('owner', 'name email')
+      .skip(skip)
+      .limit(limit)
+      .sort({ updatedAt: -1 });
+    
+    res.status(200).send({
+      tasks,
+      pagination: {
+        total,
+        page,
+        pages: Math.ceil(total / limit)
+      }
+    });
   } catch (error) {
     res.status(500).send(error);
   }

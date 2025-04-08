@@ -17,7 +17,6 @@ import {
   CardContent,
   CardActions,
   IconButton,
-  LinearProgress,
   Tooltip,
   FormControl,
   InputLabel,
@@ -40,6 +39,7 @@ import AttachmentIcon from '@mui/icons-material/Attachment';
 import { useSnackbar } from 'notistack';
 import { format } from 'date-fns';
 import useDocumentTitle from '../hooks/useDocumentTitle.js';
+import TaskSkeleton from '../components/TaskSkeleton';
 
 import { getTasks, createTask, updateTask, deleteTask, assignTask, getAllUsers, exportTasks } from '../api';
 import { useAuth } from '../context/AuthContext';
@@ -443,7 +443,13 @@ const TasksPage = () => {
       </Tabs>
 
       {loading ? (
-        <LinearProgress />
+        <Grid container spacing={3}>
+          {[...Array(6)].map((_, index) => (
+            <Grid item xs={12} sm={6} md={4} key={index}>
+              <TaskSkeleton />
+            </Grid>
+          ))}
+        </Grid>
       ) : filteredTasks.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 5 }}>
           <Typography variant="h6" color="text.secondary">
@@ -456,7 +462,7 @@ const TasksPage = () => {
       ) : (
         <Grid container spacing={3}>
           {filteredTasks.map(task => (
-            <Grid item xs={12} sm={6} md={4} key={task._id}>
+            <Grid item xs={12} sm={6} md={4} lg={3} key={task._id}>  {/* Added lg breakpoint */}
               <Card
                 variant="outlined"
                 sx={{
@@ -558,7 +564,14 @@ const TasksPage = () => {
                   )}
                 </CardContent>
 
-                <CardActions>
+                <CardActions sx={{
+                  flexWrap: 'wrap', 
+                  gap: 1,
+                  justifyContent: {
+                    xs: 'center',  // Center on mobile
+                    sm: 'flex-start'  // Left-align on larger screens
+                  }
+                }}>
                   {/* These buttons are visible based on permissions */}
                   <Box>
                     <Tooltip title={canEditTask(task) ? "Edit" : "You cannot edit this task"}>
@@ -669,7 +682,13 @@ const TasksPage = () => {
       )}
 
       {/* Task Form Dialog */}
-      <Dialog open={open} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+      <Dialog 
+        open={open} 
+        onClose={handleCloseDialog} 
+        maxWidth="sm" 
+        fullWidth
+        fullScreen={window.innerWidth < 600} // Make dialog fullscreen on mobile
+      >
         <form onSubmit={handleSubmit}>
           <DialogTitle>{editMode ? 'Edit Task' : 'Create New Task'}</DialogTitle>
           <DialogContent>

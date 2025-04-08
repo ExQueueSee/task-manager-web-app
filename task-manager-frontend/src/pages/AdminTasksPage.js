@@ -409,33 +409,11 @@ const AdminTasksPage = () => {
         </Box>
       </Box>
       
-      <TableContainer
-        sx={{
-          borderRadius: 1,
-          overflow: 'hidden',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
-          '& .MuiTableHead-root': {
-            backgroundColor: (theme) => 
-              theme.palette.mode === 'dark' 
-                ? 'rgba(30, 30, 30, 0.8)' 
-                : theme.palette.primary.light,
-            '& .MuiTableCell-head': {
-              color: (theme) => 
-                theme.palette.mode === 'dark' 
-                  ? theme.palette.common.white 
-                  : theme.palette.primary.contrastText,
-              fontWeight: 600
-            }
-          },
-          '& .MuiTableRow-root': {
-            transition: 'background-color 0.2s',
-            '&:hover': {
-              backgroundColor: (theme) => 
-                theme.palette.mode === 'dark' 
-                  ? 'rgba(255, 255, 255, 0.05)' 
-                  : 'rgba(0, 0, 0, 0.02)'
-            }
-          }
+      <TableContainer 
+        component={Paper}
+        sx={{ 
+          overflowX: 'auto', // Enable horizontal scrolling
+          maxWidth: '100%'
         }}
       >
         <Table>

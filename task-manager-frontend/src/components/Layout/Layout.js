@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Box, Drawer, AppBar, Toolbar, IconButton, Typography, Divider, List } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -88,6 +88,24 @@ const Layout = () => {
   // State to manage the drawer open/close status
   const [open, setOpen] = useState(true);
   const { user, logout } = useAuth();
+
+  // Automatically collapse drawer on small screens
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 960) {
+        setOpen(false);
+      } else {
+        setOpen(true);
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Set initial state
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   // Function to toggle the drawer open/close status
   const toggleDrawer = () => {
