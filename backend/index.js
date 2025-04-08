@@ -154,31 +154,35 @@ app.post('/tasks', auth, upload.single('attachment'), async (req, res) => {
  *         description: Internal server error
  */
 app.get('/tasks', auth, async (req, res) => {
-    try {
-        // Build query based on visibility and ownership
-        const query = {
-            $or: [
-                // Tasks created by this user
-                { owner: req.user._id },
-                // Public tasks visible to all
-                { isPublic: true },
-                // Tasks where current user is in visibleTo array
-                { visibleTo: req.user._id }
-            ]
-        };
-        
-        // Admin can see all tasks
-        if (req.user.role === 'admin') {
-            // Remove the query restrictions for admins
-            const tasks = await Task.find({}).populate('owner', 'name email');
-            return res.status(200).send(tasks);
-        }
-        
-        const tasks = await Task.find(query).populate('owner', 'name email');
-        res.status(200).send(tasks);
-    } catch (error) {
-        res.status(500).send(error);
+  try {
+    // Build query based on visibility and ownership
+    const query = {
+        $or: [
+            // Tasks created by this user
+            { owner: req.user._id },
+            // Public tasks visible to all
+            { isPublic: true },
+            // Tasks where current user is in visibleTo array
+            { visibleTo: req.user._id }
+        ]
+    };
+    
+    // Admin can see all tasks
+    if (req.user.role === 'admin') {
+        // Remove the query restrictions for admins
+        const tasks = await Task.find({}).populate('owner', 'name email');
+        return res.status(200).send(tasks);
     }
+    
+    // Use select to exclude attachment.data
+    const tasks = await Task.find(query)
+      .select('-attachment.data')
+      .populate('owner', 'name email');
+      
+    res.status(200).send(tasks);
+  } catch (error) {
+    res.status(500).send(error);
+  }
 });
 
 // Get all tasks (admin only)
