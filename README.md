@@ -1,7 +1,7 @@
 # Task Manager Web App
 
 ## Project Overview
-A comprehensive task management system designed for organizations, featuring role-based access control, task lifecycle management, notifications, user authentication, and performance gamification. This web application consists of a Node.js backend and a React frontend.
+A comprehensive task management system designed for organizations, featuring role-based access control, task lifecycle management, notifications, user authentication, performance gamification, and file attachments. This web application consists of a Node.js backend and a React frontend.
 
 ## Features
 
@@ -23,24 +23,27 @@ A comprehensive task management system designed for organizations, featuring rol
 - **Task Creation:**
   - Admins can create tasks for anyone or leave them unassigned
   - Users can create tasks for themselves or leave them unassigned
+  - **File Attachments:** Users can add file attachments (up to 10MB) when creating tasks
 - **Task Assignment:**
   - Users can assign themselves to unassigned tasks
   - Admins can reassign tasks as needed
 - **Visibility Controls:**
   - Tasks can be public or private
   - Visibility can be modified by task owners or admins
+  - Attachment visibility follows the task's visibility settings
 - **Excel Export:**
   - Export tasks to Excel spreadsheets with comprehensive filtering options
   - Download options include "All Tasks", "My Tasks", "Available Tasks", "In Progress Tasks", "Completed Tasks", "Cancelled Tasks", and "Behind Schedule Tasks"
   - Admins can export any task regardless of visibility settings
   - Regular users can only export tasks they have permission to view
-  - Exports include task name, description, status, assignee, and due date
+  - Exports include task name, description, status, assignee, due date, and attachment information
 
 ### 3. Task Properties & Workflow
 - **Task Attributes:**
   - Title, description, due date, priority
   - Assignee information
   - Visibility settings
+  - File attachments with download capability
 - **Status Tracking:**
   - Available: No user assigned yet
   - In Progress: Currently being worked on
@@ -50,6 +53,11 @@ A comprehensive task management system designed for organizations, featuring rol
 - **Due Date Notifications:**
   - Email notifications at various intervals before deadlines
   - Customizable notification schedule
+- **File Management:**
+  - Upload attachments when creating tasks
+  - Download attachments from accessible tasks
+  - Visual indicators showing which tasks have attachments
+  - Size limit of 10MB per attachment
 
 ### 4. Business Credit System
 - **Performance Gamification:**
@@ -69,13 +77,15 @@ A comprehensive task management system designed for organizations, featuring rol
   - JWT-based authentication middleware
   - Scheduled tasks for notifications and deadline tracking
   - Excel generation for task data export
+  - File upload and storage handling
 - **Frontend:**
   - React-based single-page application
   - Modern UI with Material-UI components
-  - Responsive design for all devices
+  - Responsive design for optimal viewing across all devices (mobile, tablet, desktop)
   - API integration for real-time updates
   - Interactive dashboards with data visualization
   - Export functionality for downloading task data
+  - File upload and download capabilities
 
 ## Getting Started
 
