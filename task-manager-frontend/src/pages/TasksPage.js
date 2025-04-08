@@ -88,6 +88,11 @@ const TasksPage = () => {
 
   // Function to check and update tasks that are behind schedule
   const checkBehindScheduleTasks = useCallback((tasksList) => {
+    // Safety check before mapping
+    if (!tasksList || !Array.isArray(tasksList)) {
+      console.warn('Expected array of tasks but got:', tasksList);
+      return [];
+    }
     const now = new Date();
     const updatedTasks = tasksList.map(task => {
       // Check if task has due date and is overdue
@@ -108,12 +113,39 @@ const TasksPage = () => {
     try {
       setLoading(true);
       const response = await getTasks(token);
-      // Apply behind schedule check before setting state
-      const updatedTasks = checkBehindScheduleTasks(response.data);
+      //console.log('API Response:', response); // Debug log
+
+      // Handle different response formats
+      let tasksData;
+
+      if (response && response.data) {
+        // Case 1: Response has a data property
+        tasksData = Array.isArray(response.data)
+          ? response.data
+          : (response.data.tasks || response.data.results || []);
+      } else if (Array.isArray(response)) {
+        // Case 2: Response is directly an array
+        tasksData = response;
+      } else {
+        // Case 3: Unexpected format
+        console.warn('Unexpected response format:', response);
+        tasksData = [];
+      }
+
+      // Make sure we have an array before trying to map
+      if (!Array.isArray(tasksData)) {
+        console.error('Tasks data is not an array:', tasksData);
+        tasksData = [];
+      }
+
+      // Safely process tasks
+      const updatedTasks = checkBehindScheduleTasks(tasksData);
       setTasks(updatedTasks);
+
     } catch (error) {
-      enqueueSnackbar('Failed to fetch tasks', { variant: 'error' });
       console.error('Error fetching tasks:', error);
+      enqueueSnackbar('Failed to load tasks', { variant: 'error' });
+      setTasks([]);
     } finally {
       setLoading(false);
     }
@@ -565,7 +597,7 @@ const TasksPage = () => {
                 </CardContent>
 
                 <CardActions sx={{
-                  flexWrap: 'wrap', 
+                  flexWrap: 'wrap',
                   gap: 1,
                   justifyContent: {
                     xs: 'center',  // Center on mobile
@@ -682,10 +714,10 @@ const TasksPage = () => {
       )}
 
       {/* Task Form Dialog */}
-      <Dialog 
-        open={open} 
-        onClose={handleCloseDialog} 
-        maxWidth="sm" 
+      <Dialog
+        open={open}
+        onClose={handleCloseDialog}
+        maxWidth="sm"
         fullWidth
         fullScreen={window.innerWidth < 600} // Make dialog fullscreen on mobile
       >

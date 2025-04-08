@@ -53,7 +53,29 @@ export const getUserProfile = () => {
 };
 
 // Task endpoints
-export const getTasks = () => api.get('/tasks');
+export const getTasks = async (token) => {
+  try {
+    const response = await fetch('http://localhost:3000/tasks', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch tasks');
+    }
+    
+    const data = await response.json();
+    
+    // Return a consistent format
+    return {
+      data: Array.isArray(data) ? data : (data.tasks || data.results || [])
+    };
+  } catch (error) {
+    console.error('API Error:', error);
+    throw error;
+  }
+};
 
 export const getTaskById = (taskId) => api.get(`/tasks/${taskId}`);
 
