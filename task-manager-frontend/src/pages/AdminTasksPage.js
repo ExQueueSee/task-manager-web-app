@@ -12,6 +12,8 @@ import {
   PersonAdd as AssignIcon,
   FileDownload as FileDownloadIcon
 } from '@mui/icons-material';
+import { styled } from '@mui/material/styles';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { useAuth } from '../context/AuthContext';
 import { useSnackbar } from 'notistack';
 import { getAllTasks, updateTask, deleteTask, getAllUsers, exportTasks } from '../api';
@@ -34,6 +36,18 @@ const statusLabels = {
   'cancelled': 'Cancelled',
   'behind-schedule': 'Behind Schedule'
 };
+
+const VisuallyHiddenInput = styled('input')({
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  height: 1,
+  overflow: 'hidden',
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  whiteSpace: 'nowrap',
+  width: 1,
+});
 
 const AdminTasksPage = () => {
   useDocumentTitle('Manage Tasks');
@@ -70,6 +84,9 @@ const AdminTasksPage = () => {
   // State variables for export menu
   const [exportAnchorEl, setExportAnchorEl] = useState(null);
   const openExportMenu = Boolean(exportAnchorEl);
+
+  // State for file attachment
+  const [attachmentFile, setAttachmentFile] = useState(null);
 
   // Fetch all tasks and users on component mount
   useEffect(() => {
@@ -228,6 +245,15 @@ const AdminTasksPage = () => {
     setCreateDialogOpen(false);
   };
 
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file && file.size <= 10 * 1024 * 1024) { // 10MB limit
+      setAttachmentFile(file);
+    } else if (file) {
+      enqueueSnackbar('File size exceeds 10MB limit', { variant: 'error' });
+    }
+  };
+
   const handleCreateTask = async () => {
     try {
       const taskData = { ...newTask };
@@ -238,26 +264,38 @@ const AdminTasksPage = () => {
         taskData.status = 'in-progress';
       }
       
-      // Create the task
-      const response = await fetch('http://localhost:3000/tasks', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(taskData)
+      // Create FormData to send file
+      const formData = new FormData();
+      
+      // Append all task data
+      Object.keys(taskData).forEach(key => {
+        if (key === 'visibleTo' && Array.isArray(taskData[key])) {
+          taskData[key].forEach(id => formData.append('visibleTo[]', id));
+        } else {
+          formData.append(key, taskData[key]);
+        }
       });
       
-      if (!response.ok) {
-        throw new Error('Failed to create task');
+      // Add file if selected
+      if (attachmentFile) {
+        formData.append('attachment', attachmentFile);
       }
+      
+      // Send request with FormData
+      await fetch('http://localhost:3000/tasks', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
       
       enqueueSnackbar('Task created successfully', { variant: 'success' });
       fetchTasks();
       setCreateDialogOpen(false);
+      setAttachmentFile(null); // Reset file state
     } catch (error) {
       enqueueSnackbar(error.message || 'Failed to create task', { variant: 'error' });
-      console.error('Create task error:', error);
     }
   };
 
@@ -696,6 +734,25 @@ const AdminTasksPage = () => {
               ))}
             </Select>
           </FormControl>
+          <Box sx={{ mt: 2 }}>
+            <Button
+              component="label"
+              variant="outlined"
+              startIcon={<CloudUploadIcon />}
+              sx={{ mt: 2 }}
+            >
+              Upload Attachment (Max 10MB)
+              <VisuallyHiddenInput 
+                type="file" 
+                onChange={handleFileChange} 
+              />
+            </Button>
+            {attachmentFile && (
+              <Typography variant="body2" sx={{ mt: 1 }}>
+                Selected file: {attachmentFile.name} ({(attachmentFile.size / 1024 / 1024).toFixed(2)} MB)
+              </Typography>
+            )}
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCreateDialogClose}>Cancel</Button>
