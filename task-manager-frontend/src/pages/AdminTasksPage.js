@@ -4,16 +4,17 @@ import {
   TableContainer, TableHead, TableRow, Chip, IconButton,
   Button, Dialog, DialogActions, DialogContent, DialogTitle,
   TextField, MenuItem, Select, FormControl, InputLabel, Box,
-  FormControlLabel, Checkbox
+  FormControlLabel, Checkbox, Menu
 } from '@mui/material';
 import { 
   Edit as EditIcon, 
   Delete as DeleteIcon,
-  PersonAdd as AssignIcon
+  PersonAdd as AssignIcon,
+  FileDownload as FileDownloadIcon
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { useSnackbar } from 'notistack';
-import { getAllTasks, updateTask, deleteTask, getAllUsers } from '../api';
+import { getAllTasks, updateTask, deleteTask, getAllUsers, exportTasks } from '../api';
 import { STATUS_LABELS, STATUS_COLORS, STATUS_HEX_COLORS } from '../constants/TaskConstants.js';
 import useDocumentTitle from '../hooks/useDocumentTitle.js';
 import UserMultiSelect from '../components/UserMultiSelect';
@@ -54,7 +55,7 @@ const AdminTasksPage = () => {
   });
   const [selectedUserId, setSelectedUserId] = useState('');
 
-  // Add state variables for the new task dialog
+  // State variables for the new task dialog
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [newTask, setNewTask] = useState({
     title: '',
@@ -65,6 +66,10 @@ const AdminTasksPage = () => {
     isPublic: true
   });
   const [selectedAssignee, setSelectedAssignee] = useState('');
+
+  // State variables for export menu
+  const [exportAnchorEl, setExportAnchorEl] = useState(null);
+  const openExportMenu = Boolean(exportAnchorEl);
 
   // Fetch all tasks and users on component mount
   useEffect(() => {
@@ -207,7 +212,7 @@ const AdminTasksPage = () => {
     }
   };
 
-  // Add handler functions
+  // Handler functions
   const handleCreateDialogOpen = () => {
     setNewTask({
       title: '',
@@ -258,6 +263,24 @@ const AdminTasksPage = () => {
     }
   };
 
+  const handleExportClick = (event) => {
+    setExportAnchorEl(event.currentTarget);
+  };
+
+  const handleExportClose = () => {
+    setExportAnchorEl(null);
+  };
+
+  const handleExport = async (filterType) => {
+    try {
+      await exportTasks(filterType);
+      enqueueSnackbar(`Exporting ${filterType} tasks...`, { variant: 'info' });
+    } catch (error) {
+      enqueueSnackbar('Failed to export tasks', { variant: 'error' });
+    }
+    handleExportClose();
+  };
+
   return (
     <Paper 
       sx={{ 
@@ -275,30 +298,44 @@ const AdminTasksPage = () => {
         }
       }}
     >
-      <Typography variant="h4" component="h1" gutterBottom>
-        Task Management (Admin) 
-      </Typography>
-      
-      <Button 
-        variant="contained" 
-        color="primary" 
-        sx={{ 
-          mb: 3,
-          px: 3,
-          py: 1,
-          borderRadius: '12px',
-          background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-          boxShadow: '0 5px 15px rgba(33, 150, 243, 0.3)',
-          '&:hover': {
-            boxShadow: '0 8px 25px rgba(33, 150, 243, 0.4)',
-            transform: 'translateY(-2px)'
-          },
-          transition: 'all 0.3s ease'
-        }}
-        onClick={handleCreateDialogOpen}
-      >
-        Create New Task
-      </Button>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Task Management (Admin) 
+        </Typography>
+        
+        <Box>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={handleCreateDialogOpen}
+            sx={{ mr: 1 }}
+          >
+            Create New Task
+          </Button>
+          
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<FileDownloadIcon />}
+            onClick={handleExportClick}
+          >
+            Export
+          </Button>
+          <Menu
+            anchorEl={exportAnchorEl}
+            open={openExportMenu}
+            onClose={handleExportClose}
+          >
+            <MenuItem onClick={() => handleExport('all')}>All Tasks</MenuItem>
+            <MenuItem onClick={() => handleExport('my')}>My Tasks</MenuItem>
+            <MenuItem onClick={() => handleExport('available')}>Available Tasks</MenuItem>
+            <MenuItem onClick={() => handleExport('in-progress')}>In Progress Tasks</MenuItem>
+            <MenuItem onClick={() => handleExport('completed')}>Completed Tasks</MenuItem>
+            <MenuItem onClick={() => handleExport('cancelled')}>Cancelled Tasks</MenuItem>
+            <MenuItem onClick={() => handleExport('behind-schedule')}>Behind Schedule Tasks</MenuItem>
+          </Menu>
+        </Box>
+      </Box>
       
       <TableContainer
         sx={{

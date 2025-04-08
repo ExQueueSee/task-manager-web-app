@@ -1,5 +1,5 @@
 const express = require('express');
-const bodyParser = require('body-parser');
+const bodyParser = require('body-parser'); 
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -15,6 +15,7 @@ const User = require('./models/User'); // Import the User model
 const { auth, adminAuth } = require('./middleware/auth'); // Import the auth and adminAuth middleware
 const cron = require('node-cron');
 const checkUpcomingDueDates = require('./scripts/checkUpcomingDueDates');
+const { generateTasksExcel } = require('./utils/excelExport');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -172,6 +173,102 @@ app.get('/tasks/all', auth, adminAuth, async (req, res) => {
   } catch (error) {
     console.error('Error fetching all tasks:', error); // Add this log
     res.status(500).send(error);
+  }
+});
+
+// Move this export endpoint BEFORE any /tasks/:id routes
+app.get('/tasks/export', auth, async (req, res) => {
+  try {
+    console.log('Export request received with filter:', req.query.filter);
+    const filterType = req.query.filter || 'all';
+    let query = {};
+    
+    // Build query based on filter type
+    switch (filterType) {
+      case 'my':
+        query.owner = req.user._id;
+        break;
+      case 'available':
+        query.status = 'pending';
+        query.owner = null;
+        break;
+      case 'in-progress':
+        query.status = 'in-progress';
+        break;
+      case 'completed':
+        query.status = 'completed';
+        break;
+      case 'cancelled':
+        query.status = 'cancelled';
+        break;
+      case 'behind-schedule':
+        query.status = 'behind-schedule';
+        break;
+      // 'all' doesn't need additional filters
+    }
+    
+    console.log('Query:', JSON.stringify(query));
+    
+    // For non-admin users, apply visibility filters
+    if (req.user.role !== 'admin') {
+      query = {
+        $and: [
+          query,
+          {
+            $or: [
+              { owner: req.user._id },
+              { isPublic: true },
+              { visibleTo: req.user._id }
+            ]
+          }
+        ]
+      };
+    }
+    
+    // Find tasks
+    const tasks = await Task.find(query).populate('owner', 'name email');
+    console.log(`Found ${tasks.length} tasks`);
+    
+    // Import the utility function
+    const { generateTasksExcel } = require('./utils/excelExport');
+    
+    // Generate Excel file
+    const buffer = await generateTasksExcel(tasks);
+    
+    // Set headers for file download
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="tasks_${filterType}_${Date.now()}.xlsx"`);
+    
+    // Send the buffer directly
+    res.send(buffer);
+  } catch (error) {
+    console.error('Export error details:', error);
+    res.status(500).send({ error: 'Failed to export tasks: ' + error.message });
+  }
+});
+
+// Add this simple test endpoint
+app.get('/test-excel', auth, async (req, res) => {
+  try {
+    const ExcelJS = require('exceljs');
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Test');
+    
+    worksheet.columns = [
+      { header: 'Test Column', key: 'test', width: 20 }
+    ];
+    
+    worksheet.addRow({ test: 'Test Data' });
+    
+    const buffer = await workbook.xlsx.writeBuffer();
+    
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="test.xlsx"');
+    
+    res.send(buffer);
+  } catch (error) {
+    console.error('Test Excel error:', error);
+    res.status(500).send({ error: 'Test failed: ' + error.message });
   }
 });
 
@@ -729,6 +826,8 @@ app.patch('/tasks/:id/visibility', auth, async (req, res) => {
   }
 });
 
+// Then define all your parameterized routes like /tasks/:id
+
 // USER ROUTES
 // Registration and login first
 /**
@@ -894,7 +993,7 @@ app.post('/users/login', async (req, res) => {
         const token = await user.generateAuthToken();
         res.send({ user, token });
     } catch (error) {
-        console.error('Login error:', error); // Add this line for debugging
+        console.error('Login error:', error);
         res.status(400).send({ error: 'Unable to login' });
     }
 });
@@ -966,7 +1065,7 @@ app.patch('/users/me', auth, async (req, res) => {
   }
 });
 
-// Add this route to update user's own password
+// Route to update user's own password
 app.patch('/users/me/password', auth, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;

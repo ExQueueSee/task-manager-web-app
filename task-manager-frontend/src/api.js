@@ -124,4 +124,42 @@ export const getLeaderboard = () => {
   return api.get('/users/leaderboard');
 };
 
+export const exportTasks = async (filterType) => {
+  try {
+    // Use axios with responseType: 'blob' for binary data
+    const response = await api.get(`/tasks/export?filter=${filterType}`, {
+      responseType: 'blob'
+    });
+    
+    // Create a filename
+    const filename = `tasks_${filterType}_${Date.now()}.xlsx`;
+    
+    // Create a blob from the response data
+    const blob = new Blob([response.data], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    });
+    
+    // Create a download link
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    
+    // Trigger download
+    document.body.appendChild(a);
+    a.click();
+    
+    // Clean up
+    setTimeout(() => {
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }, 100);
+    
+    return true;
+  } catch (error) {
+    console.error('Export error:', error);
+    throw error;
+  }
+};
+
 export default api;

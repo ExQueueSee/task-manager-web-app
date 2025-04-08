@@ -5,30 +5,21 @@ const User = require('../models/User'); // Import User model
 const auth = async (req, res, next) => {
   try {
     const token = req.header('Authorization').replace('Bearer ', '');
-    //console.log('Processing auth token:', token.substring(0, 10) + '...');
-    
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    //console.log('Decoded token:', decoded);
-    
     const user = await User.findOne({ 
       _id: decoded._id, 
       'tokens.token': token 
     });
     
     if (!user) {
-      console.log('User not found with token');
       throw new Error();
     }
     
-    //console.log('User authenticated:', user.email, 'Role:', user.role);
-    console.log('User authenticated');
     req.token = token;
     req.user = user;
     next();
-  } catch (error) {
-    //console.error('Authentication error:', error.message);
-    console.error('Authentication error:');
-    res.status(401).send({ error: 'Please authenticate' });
+  } catch (e) {
+    res.status(401).send({ error: 'Please authenticate.' });
   }
 };
 

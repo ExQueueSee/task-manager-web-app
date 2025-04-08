@@ -24,7 +24,8 @@ import {
   Select,
   MenuItem,
   FormControlLabel,
-  Checkbox
+  Checkbox,
+  Menu
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers';
 import AddIcon from '@mui/icons-material/Add';
@@ -34,11 +35,12 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import PersonIcon from '@mui/icons-material/Person';
 import StarIcon from '@mui/icons-material/Star';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { useSnackbar } from 'notistack';
 import { format } from 'date-fns';
 import useDocumentTitle from '../hooks/useDocumentTitle.js';
 
-import { getTasks, createTask, updateTask, deleteTask, assignTask, getAllUsers } from '../api';
+import { getTasks, createTask, updateTask, deleteTask, assignTask, getAllUsers, exportTasks } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { STATUS_LABELS, STATUS_COLORS, STATUS_HEX_COLORS } from '../constants/TaskConstants.js';
 
@@ -82,7 +84,7 @@ const TasksPage = () => {
   const [isUnassigned, setIsUnassigned] = useState(false);
   const [allUsers, setAllUsers] = useState([]);
 
-  // Add this function to check and update tasks that are behind schedule
+  // Function to check and update tasks that are behind schedule
   const checkBehindScheduleTasks = useCallback((tasksList) => {
     const now = new Date();
     const updatedTasks = tasksList.map(task => {
@@ -328,20 +330,66 @@ const TasksPage = () => {
     return () => clearInterval(interval);
   }, [fetchTasks]);
 
+  const [exportAnchorEl, setExportAnchorEl] = useState(null);
+  const openExportMenu = Boolean(exportAnchorEl);
+
+  const handleExportClick = (event) => {
+    setExportAnchorEl(event.currentTarget);
+  };
+
+  const handleExportClose = () => {
+    setExportAnchorEl(null);
+  };
+
+  const handleExport = async (filterType) => {
+    try {
+      await exportTasks(filterType);
+      enqueueSnackbar(`Exporting ${filterType} tasks...`, { variant: 'info' });
+    } catch (error) {
+      enqueueSnackbar('Failed to export tasks', { variant: 'error' });
+    }
+    handleExportClose();
+  };
+
   return (
     <Paper sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" component="h1">
           Tasks Management
         </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<AddIcon />}
-          onClick={() => handleOpenDialog()}
-        >
-          Add New Task
-        </Button>
+        <Box>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={() => handleOpenDialog()}
+            sx={{ mr: 1 }}
+          >
+            Add New Task
+          </Button>
+          
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<FileDownloadIcon />}
+            onClick={handleExportClick}
+          >
+            Export
+          </Button>
+          <Menu
+            anchorEl={exportAnchorEl}
+            open={openExportMenu}
+            onClose={handleExportClose}
+          >
+            <MenuItem onClick={() => handleExport('all')}>All Tasks</MenuItem>
+            <MenuItem onClick={() => handleExport('my')}>My Tasks</MenuItem>
+            <MenuItem onClick={() => handleExport('available')}>Available Tasks</MenuItem>
+            <MenuItem onClick={() => handleExport('in-progress')}>In Progress Tasks</MenuItem>
+            <MenuItem onClick={() => handleExport('completed')}>Completed Tasks</MenuItem>
+            <MenuItem onClick={() => handleExport('cancelled')}>Cancelled Tasks</MenuItem>
+            <MenuItem onClick={() => handleExport('behind-schedule')}>Behind Schedule Tasks</MenuItem>
+          </Menu>
+        </Box>
       </Box>
 
       <Tabs
@@ -401,7 +449,7 @@ const TasksPage = () => {
                   transition: 'transform 0.3s ease',
                 }}
               >
-                {/* Add this before the CardContent for a colored top border based on status */}
+                {/* Status bar at the top of the card */}
                 <Box 
                   sx={{ 
                     height: '5px', 
