@@ -183,32 +183,13 @@ const TasksPage = () => {
         taskData.status = 'in-progress';
       }
       
-      // Create FormData
-      const formData = new FormData();
-      
-      // Append task data
-      Object.keys(taskData).forEach(key => {
-        formData.append(key, taskData[key]);
-      });
-      
-      // Add file if selected
-      if (attachmentFile) {
-        formData.append('attachment', attachmentFile);
-      }
-      
       if (editMode) {
         // Can't upload file when editing (according to requirements)
         await updateTask(editId, taskData, token);
         enqueueSnackbar('Task updated successfully', { variant: 'success' });
       } else {
-        // Use api with FormData for file upload
-        await fetch('http://localhost:3000/tasks', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          body: formData
-        });
+        // Use the updated createTask function with attachment
+        await createTask(taskData, attachmentFile, token);
         enqueueSnackbar('Task created successfully', { variant: 'success' });
       }
       
