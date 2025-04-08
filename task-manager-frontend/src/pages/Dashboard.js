@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Box, 
   Typography, 
-  Grid, 
   Paper, 
   List, 
   ListItem, 
@@ -11,6 +10,7 @@ import {
   LinearProgress,
   Chip,
 } from '@mui/material';
+import Grid from '@mui/material/Grid'; // Import Grid
 import { 
   PieChart, 
   Pie, 
@@ -31,7 +31,7 @@ const Dashboard = () => {
   useDocumentTitle('Dashboard');
   
   const { token, user } = useAuth();
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState([]); // Ensure tasks is initialized as an array
   const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(null);
   const [upcomingTasks, setUpcomingTasks] = useState([]);
@@ -57,7 +57,7 @@ const Dashboard = () => {
       getUserRank()
     ]);
     
-    setTasks(tasksResponse.data);
+    setTasks(Array.isArray(tasksResponse.data) ? tasksResponse.data : []); // Ensure tasks is an array
     setUpcomingTasks(getUpcomingTasks(tasksResponse.data));
     setUserRank(rankResponse.data);
     } catch (error) {
