@@ -36,6 +36,8 @@ import PersonIcon from '@mui/icons-material/Person';
 import StarIcon from '@mui/icons-material/Star';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import AttachmentIcon from '@mui/icons-material/Attachment';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { styled } from '@mui/material/styles';
 import { useSnackbar } from 'notistack';
 import { format } from 'date-fns';
 import useDocumentTitle from '../hooks/useDocumentTitle.js';
@@ -62,6 +64,18 @@ const statusLabels = {
   'behind-schedule': 'Behind Schedule',
   'cancelled': 'Cancelled'
 };
+
+const VisuallyHiddenInput = styled('input')({
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  height: 1,
+  overflow: 'hidden',
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  whiteSpace: 'nowrap',
+  width: 1,
+});
 
 const TasksPage = () => {
   useDocumentTitle('Tasks');
@@ -802,10 +816,30 @@ const TasksPage = () => {
               label="Create as unassigned task (available for anyone to take)"
             />
             <Box sx={{ mt: 2 }}>
-              <input
-                type="file"
-                onChange={(e) => setAttachmentFile(e.target.files[0])}
-              />
+              <Button
+                component="label"
+                variant="outlined"
+                startIcon={<CloudUploadIcon />}
+                sx={{ mt: 2 }}
+              >
+                Upload Attachment (Max 10MB)
+                <VisuallyHiddenInput 
+                  type="file" 
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file && file.size <= 10 * 1024 * 1024) { // 10MB limit
+                      setAttachmentFile(file);
+                    } else if (file) {
+                      enqueueSnackbar('File size exceeds 10MB limit', { variant: 'error' });
+                    }
+                  }}
+                />
+              </Button>
+              {attachmentFile && (
+                <Typography variant="body2" sx={{ mt: 1 }}>
+                  Selected file: {attachmentFile.name} ({(attachmentFile.size / 1024 / 1024).toFixed(2)} MB)
+                </Typography>
+              )}
             </Box>
           </DialogContent>
           <DialogActions>
