@@ -28,6 +28,10 @@ const AdminUsersPage = () => {
   const [editRole, setEditRole] = useState('');
   const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: 'ascending'
+  });
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -44,6 +48,64 @@ const AdminUsersPage = () => {
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
+
+  const requestSort = (key) => {
+    let direction = 'ascending';
+    if (sortConfig.key === key) {
+      if (sortConfig.direction === 'ascending') {
+        direction = 'descending';
+      } else if (sortConfig.direction === 'descending') {
+        return setSortConfig({ key: null, direction: 'ascending' });
+      }
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortedUsers = useCallback(() => {
+    if (!sortConfig.key) return users;
+    
+    return [...users].sort((a, b) => {
+      if (sortConfig.key === 'createdAt' || sortConfig.key === 'lastLogin') {
+        const aDate = a[sortConfig.key] ? new Date(a[sortConfig.key]) : new Date(0);
+        const bDate = b[sortConfig.key] ? new Date(b[sortConfig.key]) : new Date(0);
+        
+        return sortConfig.direction === 'ascending' 
+          ? aDate - bDate
+          : bDate - aDate;
+      }
+      
+      if (typeof a[sortConfig.key] === 'boolean') {
+        if (sortConfig.direction === 'ascending') {
+          return a[sortConfig.key] === b[sortConfig.key] ? 0 : a[sortConfig.key] ? 1 : -1;
+        } else {
+          return a[sortConfig.key] === b[sortConfig.key] ? 0 : a[sortConfig.key] ? -1 : 1;
+        }
+      }
+      
+      if (typeof a[sortConfig.key] === 'string' && typeof b[sortConfig.key] === 'string') {
+        const aValue = a[sortConfig.key].toLowerCase();
+        const bValue = b[sortConfig.key].toLowerCase();
+        
+        if (aValue < bValue) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      }
+      
+      if (a[sortConfig.key] < b[sortConfig.key]) {
+        return sortConfig.direction === 'ascending' ? -1 : 1;
+      }
+      if (a[sortConfig.key] > b[sortConfig.key]) {
+        return sortConfig.direction === 'ascending' ? 1 : -1;
+      }
+      return 0;
+    });
+  }, [users, sortConfig]);
+
+  const sortedUsers = getSortedUsers();
 
   const handleEditClick = (user) => {
     setCurrentUser(user);
@@ -124,15 +186,55 @@ const AdminUsersPage = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Role</TableCell>
-              <TableCell>Approval Status</TableCell>
+              <TableCell onClick={() => requestSort('name')} sx={{ cursor: 'pointer' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  Name
+                  {sortConfig.key === 'name' && (
+                    <Box component="span" sx={{ ml: 0.5 }}>
+                      {sortConfig.direction === 'ascending' ? '▲' : '▼'}
+                    </Box>
+                  )}
+                </Box>
+              </TableCell>
+              <TableCell onClick={() => requestSort('email')} sx={{ cursor: 'pointer' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  Email
+                  {sortConfig.key === 'email' && (
+                    <Box component="span" sx={{ ml: 0.5 }}>
+                      {sortConfig.direction === 'ascending' ? '▲' : '▼'}
+                    </Box>
+                  )}
+                </Box>
+              </TableCell>
+              <TableCell onClick={() => requestSort('isAdmin')} sx={{ cursor: 'pointer' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  Role
+                  {sortConfig.key === 'isAdmin' && (
+                    <Box component="span" sx={{ ml: 0.5 }}>
+                      {sortConfig.direction === 'ascending' ? '▲' : '▼'}
+                    </Box>
+                  )}
+                </Box>
+              </TableCell>
+              <TableCell onClick={() => requestSort('approvalStatus')} sx={{ cursor: 'pointer' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  Registered
+                  {sortConfig.key === 'approvalStatus' && (
+                    <Box component="span" sx={{ ml: 0.5 }}>
+                      {sortConfig.direction === 'ascending' ? '▲' : '▼'}
+                    </Box>
+                  )}
+                </Box>
+              </TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {users.map(user => (
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={6} align="center">Loading users...</TableCell>
+              </TableRow>
+            ) : sortedUsers.map(user => (
               <TableRow key={user._id}>
                 <TableCell>{user.name}</TableCell>
                 <TableCell>{user.email}</TableCell>
