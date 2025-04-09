@@ -65,7 +65,7 @@ const AdminUsersPage = () => {
     if (!sortConfig.key) return users;
     
     return [...users].sort((a, b) => {
-      if (sortConfig.key === 'createdAt' || sortConfig.key === 'lastLogin') {
+      if (sortConfig.key === 'createdAt') {
         const aDate = a[sortConfig.key] ? new Date(a[sortConfig.key]) : new Date(0);
         const bDate = b[sortConfig.key] ? new Date(b[sortConfig.key]) : new Date(0);
         
@@ -73,7 +73,6 @@ const AdminUsersPage = () => {
           ? aDate - bDate
           : bDate - aDate;
       }
-      
       if (typeof a[sortConfig.key] === 'boolean') {
         if (sortConfig.direction === 'ascending') {
           return a[sortConfig.key] === b[sortConfig.key] ? 0 : a[sortConfig.key] ? 1 : -1;
