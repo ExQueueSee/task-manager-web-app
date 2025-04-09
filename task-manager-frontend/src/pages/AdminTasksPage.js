@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Typography, Paper, Table, TableBody, TableCell, 
   TableContainer, TableHead, TableRow, Chip, IconButton,
@@ -89,6 +89,12 @@ const AdminTasksPage = () => {
   // State for file attachment
   const [attachmentFile, setAttachmentFile] = useState(null);
 
+  // State variables for sorting
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: 'ascending'
+  });
+
   // Fetch all tasks and users on component mount
   useEffect(() => {
     fetchTasks();
@@ -126,6 +132,75 @@ const AdminTasksPage = () => {
       enqueueSnackbar('Failed to fetch users', { variant: 'error' });
     }
   };
+
+  const requestSort = (key) => {
+    let direction = 'ascending';
+    if (sortConfig.key === key) {
+      if (sortConfig.direction === 'ascending') {
+        direction = 'descending';
+      } else if (sortConfig.direction === 'descending') {
+        // If already descending, clear the sort
+        return setSortConfig({ key: null, direction: 'ascending' });
+      }
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortedTasks = useCallback(() => {
+    if (!sortConfig.key) return tasks;
+    
+    return [...tasks].sort((a, b) => {
+      // Handle nested properties like owner.name
+      if (sortConfig.key === 'assignedTo') {
+        const aOwner = a.owner ? (typeof a.owner === 'object' ? a.owner.name : '') : '';
+        const bOwner = b.owner ? (typeof b.owner === 'object' ? b.owner.name : '') : '';
+        
+        // Make comparison case-insensitive for names
+        if (aOwner.toLowerCase() < bOwner.toLowerCase()) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (aOwner.toLowerCase() > bOwner.toLowerCase()) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      }
+      
+      // Handle date comparisons
+      if (sortConfig.key === 'dueDate') {
+        const aDate = a.dueDate ? new Date(a.dueDate) : new Date(0);
+        const bDate = b.dueDate ? new Date(b.dueDate) : new Date(0);
+        
+        return sortConfig.direction === 'ascending' 
+          ? aDate - bDate
+          : bDate - aDate;
+      }
+      
+      // Handle string comparisons (case-insensitive)
+      if (typeof a[sortConfig.key] === 'string' && typeof b[sortConfig.key] === 'string') {
+        const aValue = a[sortConfig.key].toLowerCase();
+        const bValue = b[sortConfig.key].toLowerCase();
+        
+        if (aValue < bValue) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      }
+      
+      // Handle other types (numbers, booleans)
+      if (a[sortConfig.key] < b[sortConfig.key]) {
+        return sortConfig.direction === 'ascending' ? -1 : 1;
+      }
+      if (a[sortConfig.key] > b[sortConfig.key]) {
+        return sortConfig.direction === 'ascending' ? 1 : -1;
+      }
+      return 0;
+    });
+  }, [tasks, sortConfig]);
+
+  const sortedTasks = getSortedTasks();
 
   const handleEditClick = (task) => {
     setCurrentTask(task);
@@ -419,12 +494,57 @@ const AdminTasksPage = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Title</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Assigned To</TableCell>
-              <TableCell>Due Date</TableCell>
-              <TableCell>Attachment</TableCell>  {/* Add this new column */}
+              <TableCell onClick={() => requestSort('title')} sx={{ cursor: 'pointer' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  Title
+                  {sortConfig.key === 'title' && (
+                    <Box component="span" sx={{ ml: 0.5 }}>
+                      {sortConfig.direction === 'ascending' ? '▲' : '▼'}
+                    </Box>
+                  )}
+                </Box>
+              </TableCell>
+              <TableCell onClick={() => requestSort('description')} sx={{ cursor: 'pointer' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  Description
+                  {sortConfig.key === 'description' && (
+                    <Box component="span" sx={{ ml: 0.5 }}>
+                      {sortConfig.direction === 'ascending' ? '▲' : '▼'}
+                    </Box>
+                  )}
+                </Box>
+              </TableCell>
+              <TableCell onClick={() => requestSort('status')} sx={{ cursor: 'pointer' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  Status
+                  {sortConfig.key === 'status' && (
+                    <Box component="span" sx={{ ml: 0.5 }}>
+                      {sortConfig.direction === 'ascending' ? '▲' : '▼'}
+                    </Box>
+                  )}
+                </Box>
+              </TableCell>
+              <TableCell onClick={() => requestSort('assignedTo')} sx={{ cursor: 'pointer' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  Assigned To
+                  {sortConfig.key === 'assignedTo' && (
+                    <Box component="span" sx={{ ml: 0.5 }}>
+                      {sortConfig.direction === 'ascending' ? '▲' : '▼'}
+                    </Box>
+                  )}
+                </Box>
+              </TableCell>
+              <TableCell onClick={() => requestSort('dueDate')} sx={{ cursor: 'pointer' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  Due Date
+                  {sortConfig.key === 'dueDate' && (
+                    <Box component="span" sx={{ ml: 0.5 }}>
+                      {sortConfig.direction === 'ascending' ? '▲' : '▼'}
+                    </Box>
+                  )}
+                </Box>
+              </TableCell>
+              <TableCell>Attachment</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -433,7 +553,7 @@ const AdminTasksPage = () => {
               <TableRow>
                 <TableCell colSpan={7} align="center">Loading tasks...</TableCell>
               </TableRow>
-            ) : tasks.map(task => (
+            ) : sortedTasks.map(task => (
               <TableRow key={task._id}>
                 <TableCell>{task.title}</TableCell>
                 <TableCell>{task.description}</TableCell>
