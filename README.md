@@ -37,6 +37,12 @@ A comprehensive task management system designed for organizations, featuring rol
   - Admins can export any task regardless of visibility settings
   - Regular users can only export tasks they have permission to view
   - Exports include task name, description, status, assignee, due date, and attachment information
+- **Advanced Data Management:**
+  - Interactive sortable tables for tasks and users (admin interface)
+  - Bidirectional sorting on all columns (ascending/descending)
+  - Case-insensitive sorting for text fields
+  - Special handling for dates, statuses, and other data types
+  - Enhanced file upload interface with size validation and preview
 
 ### 3. Task Properties & Workflow
 - **Task Attributes:**
@@ -54,10 +60,12 @@ A comprehensive task management system designed for organizations, featuring rol
   - Email notifications at various intervals before deadlines
   - Customizable notification schedule
 - **File Management:**
+  - Consistent file upload interface across all parts of the application
   - Upload attachments when creating tasks
   - Download attachments from accessible tasks
   - Visual indicators showing which tasks have attachments
-  - Size limit of 10MB per attachment
+  - Size limit of 10MB per attachment with validation
+  - File size display for selected attachments
 
 ### 4. Business Credit System
 - **Performance Gamification:**
@@ -86,6 +94,7 @@ A comprehensive task management system designed for organizations, featuring rol
   - Interactive dashboards with data visualization
   - Export functionality for downloading task data
   - File upload and download capabilities
+  - Enhanced data tables with bidirectional sorting
 
 ## Getting Started
 
@@ -231,4 +240,4 @@ API documentation is available through Swagger at the `/api-docs` endpoint when 
 
 ### Tasks Page (regular user)
 ![Image](https://github.com/user-attachments/assets/7e3c7a51-1f40-442c-bcc8-3dd196c1dbe0)
-````
+`````
