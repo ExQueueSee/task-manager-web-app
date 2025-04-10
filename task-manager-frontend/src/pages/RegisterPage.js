@@ -151,7 +151,7 @@ const Register = () => {
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <TextField
-                autoComplete="name"
+                autoComplete="off"
                 name="name"
                 required
                 fullWidth
@@ -171,7 +171,7 @@ const Register = () => {
                 id="email"
                 label="Email Address"
                 name="email"
-                autoComplete="email"
+                autoComplete="off"
                 value={formData.email}
                 onChange={handleEmailChange}
                 error={!!errors.email || (formData.email && !isValidEmail)}

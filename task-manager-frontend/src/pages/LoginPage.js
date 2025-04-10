@@ -107,7 +107,7 @@ const Login = () => {
             id="email"
             label="Email Address"
             name="email"
-            autoComplete="email"
+            autoComplete="off"
             autoFocus
             value={email}
             onChange={(e) => setEmail(e.target.value)}

@@ -226,6 +226,7 @@ const ProfilePage = () => {
               value={formData.name}
               onChange={handleChange}
               variant="outlined"
+              autoComplete='off'
             />
           </Grid>
           <Grid item xs={12}>
