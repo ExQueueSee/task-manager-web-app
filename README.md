@@ -171,6 +171,7 @@ A comprehensive task management system designed for organizations, featuring rol
    EMAIL_PASSWORD=your_email_password
    FRONTEND_URL=http://localhost:3000
    ```
+   Note: If you are deploying to a production environment or using a different local setup, update the FRONTEND_URL and any other localhost references (such as backend API endpoints) to point to your actual website or server address.
 
 3. Configure email settings for notifications (if using Gmail, you may need to allow less secure apps or use app passwords)
 
@@ -197,6 +198,7 @@ A comprehensive task management system designed for organizations, featuring rol
    ```
 
 4. Access the application at: http://localhost:3000
+   Reminder: If you are not running on localhost (or if you prefer a custom port/server setting), adjust the URLs in your configuration and deployment settings accordingly.
 
 ### Running Tests
 1. Backend tests:
@@ -217,7 +219,9 @@ API documentation is available through Swagger at the `/api-docs` endpoint when 
 ## Deployment
 - The backend can be deployed to services like Heroku, AWS, or DigitalOcean
 - The frontend can be deployed to services like Netlify, Vercel, or GitHub Pages
-- Ensure to update environment variables for production deployment
+- Ensure to update environment variables for production deployment.
+  
+  Reminder: Replace any instance of "http://localhost" in your configuration (such as the FRONTEND_URL and API endpoints) with your actual domain or server IP when deploying.
 
 ## Demo Screenshots
 ### Login Page
