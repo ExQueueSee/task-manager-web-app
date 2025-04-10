@@ -4,7 +4,7 @@ import {
   TableContainer, TableHead, TableRow, Chip, IconButton,
   Button, Dialog, DialogActions, DialogContent, DialogTitle,
   TextField, MenuItem, Select, FormControl, InputLabel, Box,
-  FormControlLabel, Checkbox, Menu, Tooltip
+  FormControlLabel, Checkbox, Menu, Tooltip, useMediaQuery, useTheme
 } from '@mui/material';
 import { 
   Edit as EditIcon, 
@@ -94,6 +94,12 @@ const AdminTasksPage = () => {
     key: null,
     direction: 'ascending'
   });
+
+  // Add these lines near the top of your component
+  const theme = useTheme();
+  const isExtraSmallScreen = useMediaQuery('(max-width:400px)');
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMediumScreen = useMediaQuery(theme.breakpoints.down('md'));
 
   // Fetch all tasks and users on component mount
   useEffect(() => {
@@ -431,8 +437,8 @@ const AdminTasksPage = () => {
   return (
     <Paper 
       sx={{ 
-        p: 3,
-        borderRadius: 2,
+        p: { xs: 1, sm: 2, md: 3 },
+        borderRadius: { xs: 1, sm: 2 },
         backdropFilter: 'blur(10px)',
         backgroundColor: (theme) => 
           theme.palette.mode === 'dark' 
@@ -445,17 +451,33 @@ const AdminTasksPage = () => {
         }
       }}
     >
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: isMediumScreen ? 'column' : 'row',
+        gap: isMediumScreen ? 2 : 0,
+        justifyContent: 'space-between', 
+        alignItems: isMediumScreen ? 'flex-start' : 'center', 
+        mb: 3 
+      }}>
+        <Typography 
+          variant={isMediumScreen ? "h5" : "h4"} 
+          component="h1" 
+          gutterBottom={isMediumScreen}
+        >
           Task Management (Admin) 
         </Typography>
         
-        <Box>
+        <Box sx={{ 
+          display: 'flex',
+          width: isMediumScreen ? '100%' : 'auto',
+          justifyContent: isMediumScreen ? 'space-between' : 'flex-end'
+        }}>
           <Button 
             variant="contained" 
             color="primary" 
             onClick={handleCreateDialogOpen}
             sx={{ mr: 1 }}
+            size={isMediumScreen ? "medium" : "large"}
           >
             Create New Task
           </Button>
@@ -465,6 +487,7 @@ const AdminTasksPage = () => {
             color="primary"
             startIcon={<FileDownloadIcon />}
             onClick={handleExportClick}
+            size={isMediumScreen ? "medium" : "large"}
           >
             Export
           </Button>
@@ -487,11 +510,18 @@ const AdminTasksPage = () => {
       <TableContainer 
         component={Paper}
         sx={{ 
-          overflowX: 'auto', // Enable horizontal scrolling
-          maxWidth: '100%'
+          overflowX: 'auto',
+          maxWidth: '100%',
+          '&::-webkit-scrollbar': {
+            height: '8px',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: 'rgba(0,0,0,0.2)',
+            borderRadius: '4px',
+          },
         }}
       >
-        <Table>
+        <Table size={isSmallScreen ? "small" : "medium"}>
           <TableHead>
             <TableRow>
               <TableCell onClick={() => requestSort('title')} sx={{ cursor: 'pointer' }}>
@@ -504,16 +534,26 @@ const AdminTasksPage = () => {
                   )}
                 </Box>
               </TableCell>
-              <TableCell onClick={() => requestSort('description')} sx={{ cursor: 'pointer' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  Description
-                  {sortConfig.key === 'description' && (
-                    <Box component="span" sx={{ ml: 0.5 }}>
-                      {sortConfig.direction === 'ascending' ? '▲' : '▼'}
-                    </Box>
-                  )}
-                </Box>
-              </TableCell>
+              
+              {!isExtraSmallScreen && (
+                <TableCell 
+                  onClick={() => requestSort('description')} 
+                  sx={{ 
+                    cursor: 'pointer',
+                    maxWidth: isMediumScreen ? 150 : 'none',
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    Description
+                    {sortConfig.key === 'description' && (
+                      <Box component="span" sx={{ ml: 0.5 }}>
+                        {sortConfig.direction === 'ascending' ? '▲' : '▼'}
+                      </Box>
+                    )}
+                  </Box>
+                </TableCell>
+              )}
+              
               <TableCell onClick={() => requestSort('status')} sx={{ cursor: 'pointer' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   Status
@@ -524,39 +564,83 @@ const AdminTasksPage = () => {
                   )}
                 </Box>
               </TableCell>
-              <TableCell onClick={() => requestSort('assignedTo')} sx={{ cursor: 'pointer' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  Assigned To
-                  {sortConfig.key === 'assignedTo' && (
-                    <Box component="span" sx={{ ml: 0.5 }}>
-                      {sortConfig.direction === 'ascending' ? '▲' : '▼'}
-                    </Box>
-                  )}
-                </Box>
-              </TableCell>
-              <TableCell onClick={() => requestSort('dueDate')} sx={{ cursor: 'pointer' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  Due Date
-                  {sortConfig.key === 'dueDate' && (
-                    <Box component="span" sx={{ ml: 0.5 }}>
-                      {sortConfig.direction === 'ascending' ? '▲' : '▼'}
-                    </Box>
-                  )}
-                </Box>
-              </TableCell>
-              <TableCell>Attachment</TableCell>
+              
+              {!isExtraSmallScreen && (
+                <TableCell 
+                  onClick={() => requestSort('assignedTo')} 
+                  sx={{ 
+                    cursor: 'pointer',
+                    maxWidth: isMediumScreen ? 180 : 'none',
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    Assigned To
+                    {sortConfig.key === 'assignedTo' && (
+                      <Box component="span" sx={{ ml: 0.5 }}>
+                        {sortConfig.direction === 'ascending' ? '▲' : '▼'}
+                      </Box>
+                    )}
+                  </Box>
+                </TableCell>
+              )}
+              
+              {!isSmallScreen && (
+                <TableCell onClick={() => requestSort('dueDate')} sx={{ cursor: 'pointer' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    Due Date
+                    {sortConfig.key === 'dueDate' && (
+                      <Box component="span" sx={{ ml: 0.5 }}>
+                        {sortConfig.direction === 'ascending' ? '▲' : '▼'}
+                      </Box>
+                    )}
+                  </Box>
+                </TableCell>
+              )}
+              
+              {!isSmallScreen && <TableCell>Attachment</TableCell>}
+              
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} align="center">Loading tasks...</TableCell>
+                <TableCell colSpan={isExtraSmallScreen ? 3 : isSmallScreen ? 4 : 7} align="center">Loading tasks...</TableCell>
               </TableRow>
             ) : sortedTasks.map(task => (
               <TableRow key={task._id}>
-                <TableCell>{task.title}</TableCell>
-                <TableCell>{task.description}</TableCell>
+                <TableCell sx={{ 
+                  maxWidth: isMediumScreen ? 150 : 'none',
+                  whiteSpace: isMediumScreen ? 'nowrap' : 'normal',
+                  overflow: isMediumScreen ? 'hidden' : 'visible',
+                  textOverflow: isMediumScreen ? 'ellipsis' : 'clip',
+                }}>
+                  {isMediumScreen && task.title.length > 20 ? (
+                    <Tooltip title={task.title}>
+                      <span>{task.title.substring(0, 20)}...</span>
+                    </Tooltip>
+                  ) : (
+                    task.title
+                  )}
+                </TableCell>
+                
+                {!isExtraSmallScreen && (
+                  <TableCell sx={{ 
+                    maxWidth: isMediumScreen ? 150 : 'none',
+                    whiteSpace: isMediumScreen ? 'nowrap' : 'normal',
+                    overflow: isMediumScreen ? 'hidden' : 'visible',
+                    textOverflow: isMediumScreen ? 'ellipsis' : 'clip',
+                  }}>
+                    {isMediumScreen && task.description.length > 40 ? (
+                      <Tooltip title={task.description}>
+                        <span>{task.description.substring(0, 40)}...</span>
+                      </Tooltip>
+                    ) : (
+                      task.description
+                    )}
+                  </TableCell>
+                )}
+                
                 <TableCell>
                   <Chip 
                     label={statusLabels[task.status]} 
@@ -568,77 +652,112 @@ const AdminTasksPage = () => {
                     }}
                   />
                 </TableCell>
+                
+                {!isExtraSmallScreen && (
+                  <TableCell sx={{ 
+                    maxWidth: isMediumScreen ? 180 : 'none',
+                    whiteSpace: isMediumScreen ? 'nowrap' : 'normal',
+                    overflow: isMediumScreen ? 'hidden' : 'visible',
+                    textOverflow: isMediumScreen ? 'ellipsis' : 'clip',
+                  }}>
+                    {task.owner ? (
+                      (() => {
+                        const ownerId = typeof task.owner === 'object' ? task.owner._id : task.owner;
+                        const assignedUser = users.find(u => u._id === ownerId);
+                        const userDisplay = assignedUser ? `${assignedUser.name} (${assignedUser.email})` : 'Unknown User';
+                        
+                        if (isMediumScreen && userDisplay.length > 25) {
+                          return (
+                            <Tooltip title={userDisplay}>
+                              <span>{userDisplay.substring(0, 25)}...</span>
+                            </Tooltip>
+                          );
+                        }
+                        return userDisplay;
+                      })()
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        Unassigned
+                      </Typography>
+                    )}
+                  </TableCell>
+                )}
+                
+                {!isSmallScreen && (
+                  <TableCell>
+                    {task.dueDate ? (
+                      isMediumScreen ? 
+                        new Date(task.dueDate).toLocaleDateString() : 
+                        new Date(task.dueDate).toLocaleString()
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">No due date</Typography>
+                    )}
+                  </TableCell>
+                )}
+                
+                {!isSmallScreen && (
+                  <TableCell>
+                    {task.attachment && task.attachment.filename ? (
+                      <Tooltip title={`Download ${task.attachment.filename}`}>
+                        <IconButton 
+                          size="small" 
+                          onClick={() => handleDownloadAttachment(task._id, task.attachment.filename)}
+                        >
+                          <AttachmentIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">None</Typography>
+                    )}
+                  </TableCell>
+                )}
+                
                 <TableCell>
-                  {task.owner ? (
-                    (() => {
-                      // Owner might be either a string ID or an object with _id property
-                      const ownerId = typeof task.owner === 'object' ? task.owner._id : task.owner;
-                      const assignedUser = users.find(u => u._id === ownerId);
-                      return assignedUser ? `${assignedUser.name} (${assignedUser.email})` : 'Unknown User';
-                    })()
-                  ) : (
-                    <Typography variant="body2" color="text.secondary">
-                      Unassigned
-                    </Typography>
-                  )}
-                </TableCell>
-                <TableCell>
-                  {task.dueDate ? new Date(task.dueDate).toLocaleString() : 'No due date'}
-                </TableCell>
-                <TableCell>
-                  <Tooltip title={(task.attachment && task.attachment.filename) ? "Download Attachment" : "No attachment available"}>
-                    <span>
-                      <IconButton
-                        size="small"
-                        color={(task.attachment && task.attachment.filename) ? "primary" : "default"}
-                        onClick={(task.attachment && task.attachment.filename) ? () => handleDownloadAttachment(
-                          task._id,
-                          task.attachment.filename
-                        ) : undefined}
-                        disabled={!(task.attachment && task.attachment.filename)}
-                      >
-                        <AttachmentIcon />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                </TableCell>
-                <TableCell>
-                  <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    gap: { xs: 0.5, sm: isMediumScreen ? 0.5 : 1 },
+                    flexWrap: 'wrap'
+                  }}>
                     <IconButton 
                       size="small" 
                       sx={{ 
                         bgcolor: 'primary.light', 
                         color: 'primary.contrastText',
+                        padding: isExtraSmallScreen ? '4px' : isMediumScreen ? '6px' : '8px',
                         '&:hover': { transform: 'scale(1.1)' },
                         transition: 'transform 0.2s'
                       }}
                       onClick={() => handleEditClick(task)}
                     >
-                      <EditIcon fontSize="small" />
+                      <EditIcon fontSize={isExtraSmallScreen ? "inherit" : "small"} />
                     </IconButton>
+                    
                     <IconButton 
                       size="small"
                       sx={{ 
                         bgcolor: 'secondary.light', 
                         color: 'secondary.contrastText',
+                        padding: isExtraSmallScreen ? '4px' : isMediumScreen ? '6px' : '8px',
                         '&:hover': { transform: 'scale(1.1)' },
                         transition: 'transform 0.2s'
                       }}
                       onClick={() => handleAssignClick(task)}
                     >
-                      <AssignIcon fontSize="small" />
+                      <AssignIcon fontSize={isExtraSmallScreen ? "inherit" : "small"} />
                     </IconButton>
+                    
                     <IconButton 
                       size="small"
                       sx={{ 
                         bgcolor: 'error.light', 
                         color: 'error.contrastText',
+                        padding: isExtraSmallScreen ? '4px' : isMediumScreen ? '6px' : '8px',
                         '&:hover': { transform: 'scale(1.1)' },
                         transition: 'transform 0.2s'
                       }}
                       onClick={() => handleDeleteTask(task._id)}
                     >
-                      <DeleteIcon fontSize="small" />
+                      <DeleteIcon fontSize={isExtraSmallScreen ? "inherit" : "small"} />
                     </IconButton>
                   </Box>
                 </TableCell>
@@ -648,8 +767,18 @@ const AdminTasksPage = () => {
         </Table>
       </TableContainer>
       
-      {/* Edit Task Dialog */}
-      <Dialog open={editDialogOpen} onClose={handleEditClose}>
+      <Dialog 
+        open={editDialogOpen} 
+        onClose={handleEditClose}
+        fullScreen={isSmallScreen}
+        maxWidth="md"
+        PaperProps={{
+          sx: {
+            width: isMediumScreen && !isSmallScreen ? '80%' : undefined,
+            maxHeight: isMediumScreen && !isSmallScreen ? '90%' : undefined,
+          }
+        }}
+      >
         <DialogTitle>Edit Task</DialogTitle>
         <DialogContent>
           <TextField
@@ -741,14 +870,24 @@ const AdminTasksPage = () => {
             />
           )}
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ padding: isMediumScreen ? 2 : undefined }}>
           <Button onClick={handleEditClose}>Cancel</Button>
-          <Button onClick={handleEditSave}>Save</Button>
+          <Button onClick={handleEditSave} variant={isMediumScreen ? "contained" : "text"}>Save</Button>
         </DialogActions>
       </Dialog>
       
-      {/* Assign Task Dialog */}
-      <Dialog open={assignDialogOpen} onClose={handleAssignClose}>
+      <Dialog 
+        open={assignDialogOpen} 
+        onClose={handleAssignClose}
+        fullScreen={isSmallScreen}
+        maxWidth="md"
+        PaperProps={{
+          sx: {
+            width: isMediumScreen && !isSmallScreen ? '80%' : undefined,
+            maxHeight: isMediumScreen && !isSmallScreen ? '90%' : undefined,
+          }
+        }}
+      >
         <DialogTitle>Assign Task</DialogTitle>
         <DialogContent>
           <FormControl fullWidth margin="dense">
@@ -769,14 +908,24 @@ const AdminTasksPage = () => {
             </Select>
           </FormControl>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ padding: isMediumScreen ? 2 : undefined }}>
           <Button onClick={handleAssignClose}>Cancel</Button>
-          <Button onClick={handleAssignSave}>Assign</Button>
+          <Button onClick={handleAssignSave} variant={isMediumScreen ? "contained" : "text"}>Assign</Button>
         </DialogActions>
       </Dialog>
 
-      {/* Create Task Dialog */}
-      <Dialog open={createDialogOpen} onClose={handleCreateDialogClose} maxWidth="md" fullWidth>
+      <Dialog 
+        open={createDialogOpen} 
+        onClose={handleCreateDialogClose} 
+        fullScreen={isSmallScreen}
+        maxWidth="md"
+        PaperProps={{
+          sx: {
+            width: isMediumScreen && !isSmallScreen ? '80%' : undefined,
+            maxHeight: isMediumScreen && !isSmallScreen ? '90%' : undefined,
+          }
+        }}
+      >
         <DialogTitle>Create New Task</DialogTitle>
         <DialogContent>
           <TextField
@@ -906,13 +1055,14 @@ const AdminTasksPage = () => {
             )}
           </Box>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ padding: isMediumScreen ? 2 : undefined }}>
           <Button onClick={handleCreateDialogClose}>Cancel</Button>
           <Button 
             onClick={handleCreateTask} 
             variant="contained" 
             color="primary"
             disabled={!newTask.title || !newTask.description}
+            size={isMediumScreen ? "medium" : "large"}
           >
             Create Task
           </Button>

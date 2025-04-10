@@ -24,7 +24,8 @@ import {
   MenuItem,
   FormControlLabel,
   Checkbox,
-  Menu
+  Menu,
+  useMediaQuery
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers';
 import AddIcon from '@mui/icons-material/Add';
@@ -435,7 +436,10 @@ const TasksPage = () => {
   };
 
   return (
-    <Paper sx={{ p: 3 }}>
+    <Paper sx={{ 
+      p: { xs: 1, sm: 2, md: 3 },  // Responsive padding
+      borderRadius: { xs: 1, sm: 2 },  // Responsive border radius
+    }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" component="h1">
           Tasks Management
@@ -489,9 +493,9 @@ const TasksPage = () => {
       </Tabs>
 
       {loading ? (
-        <Grid container spacing={3}>
-          {[...Array(6)].map((_, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
+        <Grid container spacing={{ xs: 1, sm: 2, md: 3 }}>
+          {Array.from(new Array(8)).map((_, index) => (
+            <Grid item xs={12} sm={6} md={4} lg={3} xl={2} key={index}>
               <TaskSkeleton />
             </Grid>
           ))}
@@ -506,9 +510,24 @@ const TasksPage = () => {
           </Typography>
         </Box>
       ) : (
-        <Grid container spacing={3}>
+        <Grid container spacing={{ xs: 1, sm: 2, md: 3 }}>
           {filteredTasks.map(task => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={task._id}>  {/* Added lg breakpoint */}
+            <Grid 
+              item 
+              xs={12}
+              sm={6} 
+              md={4} 
+              lg={3}
+              xl={2}
+              // Add specific breakpoints for fold devices
+              sx={{ 
+                '@media (max-width: 360px)': {
+                  maxWidth: '100%',
+                  flexBasis: '100%',
+                }
+              }} 
+              key={task._id}
+            >
               <Card
                 variant="outlined"
                 sx={{
@@ -529,10 +548,12 @@ const TasksPage = () => {
                     opacity: 0,
                     transition: 'opacity 0.3s ease',
                   },
-                  '&:hover': {
-                    transform: 'translateY(-5px)',
-                    '&::before': {
-                      opacity: 1,
+                  '@media (hover: hover)': {
+                    '&:hover': {
+                      transform: 'translateY(-5px)',
+                      '&::before': {
+                        opacity: 1,
+                      },
                     },
                   },
                   transition: 'transform 0.3s ease',
@@ -733,7 +754,13 @@ const TasksPage = () => {
         onClose={handleCloseDialog}
         maxWidth="sm"
         fullWidth
-        fullScreen={window.innerWidth < 600} // Make dialog fullscreen on mobile
+        fullScreen={useMediaQuery((theme) => theme.breakpoints.down('sm'))}
+        sx={{
+          '& .MuiDialog-paper': {
+            width: { xs: '95%', sm: '80%', md: '600px' },
+            margin: { xs: '16px', sm: '32px', md: 'auto' },
+          }
+        }}
       >
         <form onSubmit={handleSubmit}>
           <DialogTitle>{editMode ? 'Edit Task' : 'Create New Task'}</DialogTitle>

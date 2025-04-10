@@ -25,7 +25,7 @@ import AdminLeaderboardPage from './pages/AdminLeaderboardPage';
 
 // Context
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { ColorModeProvider} from './context/ColorModeContext';
+import { ColorModeProvider } from './context/ColorModeContext';
 
 // Components
 import Layout from './components/Layout/Layout';
@@ -48,6 +48,21 @@ const AppContent = () => {
         paper: '#1e1e1e', // Dark paper
       },
     },
+    // Custom breakpoints for better device support
+    breakpoints: {
+      values: {
+        xs: 0,      // Extra small devices
+        sm: 600,    // Small devices
+        md: 960,    // Medium devices
+        lg: 1280,   // Large devices
+        xl: 1920,   // Extra large devices
+        // Custom breakpoints for specific device types
+        fold: 350,  // For foldable devices in folded state (Galaxy Z Fold)
+        mobile: 414, // Common mobile width (covers iPhone models)
+        tablet: 768, // iPad mini and similar tablets
+        laptop: 1024 // iPad Pro, Surface Pro and similar
+      },
+    },
     typography: {
       fontFamily: '"Poppins", "Roboto", "Helvetica", "Arial", sans-serif',
       h4: {
@@ -61,6 +76,20 @@ const AppContent = () => {
       borderRadius: 8,
     },
     components: {
+      MuiDialog: {
+        styleOverrides: {
+          paper: {
+            margin: '16px',
+            width: 'calc(100% - 32px)',
+            maxWidth: '600px',
+            // Ensure dialogs are accessible on small screens
+            '@media (max-width:400px)': {
+              margin: '8px',
+              width: 'calc(100% - 16px)',
+            },
+          },
+        },
+      },
       MuiButton: {
         styleOverrides: {
           root: {
@@ -99,6 +128,20 @@ const AppContent = () => {
             ':hover': {
               transform: 'translateY(-4px)',
               boxShadow: '0 8px 20px rgba(0, 0, 0, 0.1)',
+            },
+          },
+        },
+      },
+      MuiTableCell: {
+        styleOverrides: {
+          root: {
+            // Make table cells more responsive
+            '@media (max-width:600px)': {
+              padding: '8px 6px',
+            },
+            '@media (max-width:400px)': {
+              padding: '6px 4px',
+              fontSize: '0.75rem',
             },
           },
         },

@@ -9,6 +9,8 @@ import {
   Divider,
   LinearProgress,
   Chip,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import Grid from '@mui/material/Grid'; // Import Grid
 import { 
@@ -37,6 +39,10 @@ const Dashboard = () => {
   const [upcomingTasks, setUpcomingTasks] = useState([]);
   const [userRank, setUserRank] = useState({ rank: 0, credits: 0 });
   const [loadingRank, setLoadingRank] = useState(true);
+
+  const theme = useTheme();
+  const isExtraSmallScreen = useMediaQuery('(max-width:400px)');
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   const statusColors = useMemo(() => ({
   'pending': '#3498db',     // Blue
@@ -161,205 +167,440 @@ const Dashboard = () => {
 
   return (
   <Box>
-    <Typography variant="h4" sx={{ mb: 4 }}>
-    Dashboard
+    {/* Adjust header typography for extra small screens */}
+    <Typography 
+      variant={isExtraSmallScreen ? "h5" : "h4"} 
+      sx={{ 
+        mb: { xs: 1.5, sm: 2, md: 4 },
+        fontSize: isExtraSmallScreen ? '1.4rem' : undefined
+      }}
+    >
+      Dashboard
     </Typography>
     
-    <Box sx={{ mb: 2 }}>
-    <Typography variant="h6" sx={{ mb: 1 }}>
-      Welcome back, {user?.name}!
-    </Typography>
-    <Typography variant="body2" color="text.secondary">
-      Here's an overview of your tasks and progress.
-    </Typography>
+    <Box sx={{ mb: isExtraSmallScreen ? 1 : 2 }}>
+      <Typography 
+        variant={isExtraSmallScreen ? "subtitle1" : "h6"} 
+        sx={{ mb: isExtraSmallScreen ? 0.5 : 1 }}
+      >
+        Welcome back, {user?.name}!
+      </Typography>
+      <Typography 
+        variant="body2" 
+        color="text.secondary"
+        sx={{ fontSize: isExtraSmallScreen ? '0.75rem' : undefined }}
+      >
+        Here's an overview of your tasks and progress.
+      </Typography>
     </Box>
     
-    {/* Stats Cards */}
-    <Grid container spacing={3} sx={{ mb: 4 }}>
-    <Grid item xs={12} sm={6} md={3}>
-      <Paper 
-      sx={{ 
-        p: 2, 
-        textAlign: 'center', 
-        height: '100%', 
-        background: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)',
-        color: 'white',
-        position: 'relative',
-        overflow: 'hidden'
-      }}
-      >
-      <StarIcon sx={{ fontSize: 100, position: 'absolute', right: -20, bottom: -15, opacity: 0.2 }} />
-      <Typography variant="h6" color="white">Business Cred</Typography>
-      <Typography variant="h3" color="white">{loadingRank ? '...' : userRank.credits}</Typography>
-      </Paper>
-    </Grid>
-    
-    <Grid item xs={12} sm={6} md={3}>
-      <Paper 
-      sx={{ 
-        p: 2, 
-        textAlign: 'center', 
-        height: '100%', 
-        background: 'linear-gradient(135deg, #FF9800 0%, #FF5722 100%)',
-        color: 'white',
-        position: 'relative',
-        overflow: 'hidden'
-      }}
-      >
-      <EmojiEventsIcon sx={{ fontSize: 100, position: 'absolute', right: -20, bottom: -15, opacity: 0.2 }} />
-      <Typography variant="h6" color="white">Rank</Typography>
-      <Typography variant="h3" color="white">#{loadingRank ? '...' : userRank.rank}</Typography>
-      </Paper>
-    </Grid>
-
-    <Grid item xs={12} sm={6} md={3}>
-      <Paper sx={{ p: 2, textAlign: 'center', height: '100%' }}>
-      <Typography variant="h6" color="text.secondary">Total Tasks</Typography>
-      <Typography variant="h3">{totalTasks}</Typography>
-      </Paper>
-    </Grid>
-    
-    <Grid item xs={12} sm={6} md={3}>
-      <Paper sx={{ p: 2, textAlign: 'center', height: '100%', bgcolor: 'success.light' }}>
-      <Typography variant="h6" color="white">Completed</Typography>
-      <Typography variant="h3" color="white">{completedTasks}</Typography>
-      </Paper>
-    </Grid>
-    
-    <Grid item xs={12} sm={6} md={3}>
-      <Paper sx={{ p: 2, textAlign: 'center', height: '100%', bgcolor: 'warning.light' }}>
-      <Typography variant="h6" color="white">In Progress</Typography>
-      <Typography variant="h3" color="white">{inProgressTasks}</Typography>
-      </Paper>
-    </Grid>
-    
-    <Grid item xs={12} sm={6} md={3}>
-      <Paper sx={{ p: 2, textAlign: 'center', height: '100%', bgcolor: 'info.light' }}>
-      <Typography variant="h6" color="white">Pending</Typography>
-      <Typography variant="h3" color="white">{pendingTasks}</Typography>
-      </Paper>
-    </Grid>
-    </Grid>
-    
-    {/* Charts & Lists */}
-    <Grid container spacing={3}>
-    {/* Chart */}
-    <Grid item xs={12} md={6}>
-      <Paper sx={{ p: 2, height: '100%' }}>
-      <Typography variant="h6" sx={{ mb: 2 }}>Task Status Distribution</Typography>
-      {totalTasks > 0 ? (
-        <ResponsiveContainer width="100%" height={300}>
-        <PieChart>
-          <Pie
-          activeIndex={activeIndex}
-          activeShape={renderActiveShape}
-          data={statusData}
-          cx="50%"
-          cy="50%"
-          innerRadius={60}
-          outerRadius={80}
-          fill="#8884d8"
-          dataKey="value"
-          onMouseEnter={onPieEnter}
+    {/* Stats Cards - adjust spacing and layout for extra small screens */}
+    <Grid 
+      container 
+      spacing={{ xs: isExtraSmallScreen ? 0.5 : 1, sm: 2, md: 3 }} 
+      sx={{ mb: { xs: isExtraSmallScreen ? 1 : 2, sm: 4 } }}
+    >
+      {/* Business Cred Card */}
+      <Grid item xs={isExtraSmallScreen ? 6 : 12} sm={6} md={3}>
+        <Paper 
+          sx={{ 
+            p: { xs: isExtraSmallScreen ? 0.75 : 1, sm: 2 }, 
+            textAlign: 'center', 
+            height: '100%', 
+            background: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)',
+            color: 'white',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+        >
+          <StarIcon sx={{ 
+            fontSize: { 
+              xs: isExtraSmallScreen ? 40 : 60, 
+              sm: 100 
+            }, 
+            position: 'absolute', 
+            right: isExtraSmallScreen ? -10 : -20, 
+            bottom: isExtraSmallScreen ? -10 : -15, 
+            opacity: 0.2 
+          }} />
+          <Typography 
+            variant={isExtraSmallScreen ? "body2" : (isSmallScreen ? "subtitle1" : "h6")} 
+            color="white"
           >
-          {statusData.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={entry.color} />
-          ))}
-          </Pie>
-          <Tooltip />
-          <Legend />
-        </PieChart>
-        </ResponsiveContainer>
-      ) : (
-        <Box sx={{ textAlign: 'center', py: 5 }}>
-        <Typography color="text.secondary">No tasks available</Typography>
-        </Box>
-      )}
-      </Paper>
+            Business Cred
+          </Typography>
+          <Typography 
+            variant={isExtraSmallScreen ? "h5" : (isSmallScreen ? "h4" : "h3")} 
+            color="white"
+            sx={{ fontSize: isExtraSmallScreen ? '1.25rem' : undefined }}
+          >
+            {loadingRank ? '...' : userRank.credits}
+          </Typography>
+        </Paper>
+      </Grid>
+      
+      {/* Rank Card */}
+      <Grid item xs={isExtraSmallScreen ? 6 : 12} sm={6} md={3}>
+        <Paper 
+          sx={{ 
+            p: { xs: isExtraSmallScreen ? 0.75 : 1, sm: 2 }, 
+            textAlign: 'center', 
+            height: '100%', 
+            background: 'linear-gradient(135deg, #FF9800 0%, #FF5722 100%)',
+            color: 'white',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+        >
+          <EmojiEventsIcon sx={{ 
+            fontSize: { 
+              xs: isExtraSmallScreen ? 40 : 60, 
+              sm: 100 
+            }, 
+            position: 'absolute', 
+            right: isExtraSmallScreen ? -10 : -20, 
+            bottom: isExtraSmallScreen ? -10 : -15, 
+            opacity: 0.2 
+          }} />
+          <Typography 
+            variant={isExtraSmallScreen ? "body2" : (isSmallScreen ? "subtitle1" : "h6")} 
+            color="white"
+          >
+            Rank
+          </Typography>
+          <Typography 
+            variant={isExtraSmallScreen ? "h5" : (isSmallScreen ? "h4" : "h3")} 
+            color="white"
+            sx={{ fontSize: isExtraSmallScreen ? '1.25rem' : undefined }}
+          >
+            #{loadingRank ? '...' : userRank.rank}
+          </Typography>
+        </Paper>
+      </Grid>
+
+      {/* Total Tasks Card */}
+      <Grid item xs={isExtraSmallScreen ? 6 : 12} sm={6} md={3}>
+        <Paper sx={{ 
+          p: { xs: isExtraSmallScreen ? 0.75 : 1, sm: 2 }, 
+          textAlign: 'center', 
+          height: '100%' 
+        }}>
+          <Typography 
+            variant={isExtraSmallScreen ? "body2" : (isSmallScreen ? "subtitle1" : "h6")} 
+            color="text.secondary"
+          >
+            Total Tasks
+          </Typography>
+          <Typography 
+            variant={isExtraSmallScreen ? "h5" : (isSmallScreen ? "h4" : "h3")}
+            sx={{ fontSize: isExtraSmallScreen ? '1.25rem' : undefined }}
+          >
+            {totalTasks}
+          </Typography>
+        </Paper>
+      </Grid>
+      
+      {/* Completed Card */}
+      <Grid item xs={isExtraSmallScreen ? 6 : 12} sm={6} md={3}>
+        <Paper sx={{ 
+          p: { xs: isExtraSmallScreen ? 0.75 : 1, sm: 2 }, 
+          textAlign: 'center', 
+          height: '100%', 
+          bgcolor: 'success.light' 
+        }}>
+          <Typography 
+            variant={isExtraSmallScreen ? "body2" : (isSmallScreen ? "subtitle1" : "h6")} 
+            color="white"
+          >
+            Completed
+          </Typography>
+          <Typography 
+            variant={isExtraSmallScreen ? "h5" : (isSmallScreen ? "h4" : "h3")} 
+            color="white"
+            sx={{ fontSize: isExtraSmallScreen ? '1.25rem' : undefined }}
+          >
+            {completedTasks}
+          </Typography>
+        </Paper>
+      </Grid>
+      
+      {/* In Progress Card */}
+      <Grid item xs={isExtraSmallScreen ? 6 : 12} sm={6} md={3}>
+        <Paper sx={{ 
+          p: { xs: isExtraSmallScreen ? 0.75 : 1, sm: 2 }, 
+          textAlign: 'center', 
+          height: '100%', 
+          bgcolor: 'warning.light' 
+        }}>
+          <Typography 
+            variant={isExtraSmallScreen ? "body2" : (isSmallScreen ? "subtitle1" : "h6")} 
+            color="white"
+          >
+            In Progress
+          </Typography>
+          <Typography 
+            variant={isExtraSmallScreen ? "h5" : (isSmallScreen ? "h4" : "h3")} 
+            color="white"
+            sx={{ fontSize: isExtraSmallScreen ? '1.25rem' : undefined }}
+          >
+            {inProgressTasks}
+          </Typography>
+        </Paper>
+      </Grid>
+      
+      {/* Pending Card */}
+      <Grid item xs={isExtraSmallScreen ? 6 : 12} sm={6} md={3}>
+        <Paper sx={{ 
+          p: { xs: isExtraSmallScreen ? 0.75 : 1, sm: 2 }, 
+          textAlign: 'center', 
+          height: '100%', 
+          bgcolor: 'info.light' 
+        }}>
+          <Typography 
+            variant={isExtraSmallScreen ? "body2" : (isSmallScreen ? "subtitle1" : "h6")} 
+            color="white"
+          >
+            Pending
+          </Typography>
+          <Typography 
+            variant={isExtraSmallScreen ? "h5" : (isSmallScreen ? "h4" : "h3")} 
+            color="white"
+            sx={{ fontSize: isExtraSmallScreen ? '1.25rem' : undefined }}
+          >
+            {pendingTasks}
+          </Typography>
+        </Paper>
+      </Grid>
     </Grid>
     
-    {/* Upcoming Tasks */}
-    <Grid item xs={12} md={6}>
-      <Paper sx={{ p: 2, height: '100%' }}>
-      <Typography variant="h6" sx={{ mb: 2 }}>Tasks With Deadlines</Typography>
-      {upcomingTasks.length > 0 ? (
-        <List>
-        {upcomingTasks.map((task) => (
-          <React.Fragment key={task._id}>
-          <ListItem>
-            <ListItemText
-            primary={task.title}
-            secondary={
-              <>
-              <Typography component="span" variant="body2" color="text.primary">
-                {task.description.substring(0, 60)}
-                {task.description.length > 60 ? '...' : ''}
+    {/* Charts & Lists with extra small screen adjustments */}
+    <Grid container spacing={{ xs: isExtraSmallScreen ? 0.5 : 1, sm: 2, md: 3 }}>
+      {/* Chart */}
+      <Grid item xs={12} md={6}>
+        <Paper sx={{ 
+          p: { xs: isExtraSmallScreen ? 0.75 : 1, sm: 2 }, 
+          height: '100%' 
+        }}>
+          <Typography 
+            variant={isExtraSmallScreen ? "subtitle1" : "h6"} 
+            sx={{ 
+              mb: { xs: isExtraSmallScreen ? 0.5 : 1, sm: 2 },
+              fontSize: isExtraSmallScreen ? '1rem' : undefined
+            }}
+          >
+            Task Status Distribution
+          </Typography>
+          {totalTasks > 0 ? (
+            <ResponsiveContainer 
+              width="100%" 
+              height={isExtraSmallScreen ? 200 : isSmallScreen ? 250 : 300}
+            >
+              <PieChart>
+                <Pie
+                  activeIndex={activeIndex}
+                  activeShape={renderActiveShape}
+                  data={statusData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={isExtraSmallScreen ? 40 : 60}
+                  outerRadius={isExtraSmallScreen ? 60 : 80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  onMouseEnter={onPieEnter}
+                >
+                  {statusData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend 
+                  iconSize={isExtraSmallScreen ? 8 : 10}
+                  iconType="circle"
+                  layout={isExtraSmallScreen ? "horizontal" : "vertical"}
+                  verticalAlign={isExtraSmallScreen ? "bottom" : "middle"}
+                  align={isExtraSmallScreen ? "center" : "right"}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <Box sx={{ textAlign: 'center', py: isExtraSmallScreen ? 3 : 5 }}>
+              <Typography 
+                color="text.secondary"
+                sx={{ fontSize: isExtraSmallScreen ? '0.75rem' : undefined }}
+              >
+                No tasks available
               </Typography>
-              {task.dueDate && (
-                <Typography component="span" variant="body2" display="block">
-                Due: {format(new Date(task.dueDate), 'PPp')}
-                </Typography>
-              )}
-              </>
-            }
-            />
-            <Chip 
-            label={task.status} 
-            size="small" 
-            color={
-              task.status === 'pending' ? 'info' : 
-              task.status === 'in-progress' ? 'warning' : 'default'
-            } 
-            />
-          </ListItem>
-          <Divider />
-          </React.Fragment>
-        ))}
-        </List>
-      ) : (
-        <Box sx={{ textAlign: 'center', py: 5 }}>
-        <Typography color="text.secondary">No upcoming tasks</Typography>
-        </Box>
-      )}
-      </Paper>
-    </Grid>
-    
-    {/* Recently Completed Tasks */}
-    <Grid item xs={12} md={12}>
-      <Paper sx={{ p: 2, mt: 3 }}>
-      <Typography variant="h6" sx={{ mb: 2 }}>Recently Completed Tasks</Typography>
-      {recentlyCompleted.length > 0 ? (
-        <List>
-        {recentlyCompleted.map((task) => (
-          <React.Fragment key={task._id}>
-          <ListItem>
-            <ListItemText
-            primary={task.title}
-            secondary={
-              <>
-              <Typography component="span" variant="body2" color="text.primary">
-                {task.description.substring(0, 60)}
-                {task.description.length > 60 ? '...' : ''}
+            </Box>
+          )}
+        </Paper>
+      </Grid>
+      
+      {/* Upcoming Tasks */}
+      <Grid item xs={12} md={6}>
+        <Paper sx={{ 
+          p: { xs: isExtraSmallScreen ? 0.75 : 1, sm: 2 }, 
+          height: '100%' 
+        }}>
+          <Typography 
+            variant={isExtraSmallScreen ? "subtitle1" : "h6"} 
+            sx={{ 
+              mb: { xs: isExtraSmallScreen ? 0.5 : 1, sm: 2 },
+              fontSize: isExtraSmallScreen ? '1rem' : undefined
+            }}
+          >
+            Tasks With Deadlines
+          </Typography>
+          {upcomingTasks.length > 0 ? (
+            <List sx={{ 
+              '& .MuiListItem-root': { 
+                py: isExtraSmallScreen ? 0.5 : 1,
+                px: isExtraSmallScreen ? 1 : 2
+              } 
+            }}>
+              {upcomingTasks.map((task) => (
+                <React.Fragment key={task._id}>
+                  <ListItem>
+                    <ListItemText
+                      primary={
+                        <Typography 
+                          variant={isExtraSmallScreen ? "body2" : "body1"}
+                          sx={{ fontWeight: 500 }}
+                        >
+                          {task.title}
+                        </Typography>
+                      }
+                      secondary={
+                        <>
+                          <Typography 
+                            component="span" 
+                            variant="body2" 
+                            color="text.primary"
+                            sx={{ fontSize: isExtraSmallScreen ? '0.7rem' : undefined }}
+                          >
+                            {/* Trim description more aggressively on small screens */}
+                            {task.description.substring(0, isExtraSmallScreen ? 30 : 60)}
+                            {task.description.length > (isExtraSmallScreen ? 30 : 60) ? '...' : ''}
+                          </Typography>
+                          {task.dueDate && (
+                            <Typography 
+                              component="span" 
+                              variant="body2" 
+                              display="block"
+                              sx={{ fontSize: isExtraSmallScreen ? '0.7rem' : undefined }}
+                            >
+                              Due: {format(new Date(task.dueDate), isExtraSmallScreen ? 'PP' : 'PPp')}
+                            </Typography>
+                          )}
+                        </>
+                      }
+                    />
+                    <Chip 
+                      label={task.status} 
+                      size="small" 
+                      sx={{ fontSize: isExtraSmallScreen ? '0.6rem' : undefined, height: isExtraSmallScreen ? 20 : 24 }}
+                      color={
+                        task.status === 'pending' ? 'info' : 
+                        task.status === 'in-progress' ? 'warning' : 'default'
+                      } 
+                    />
+                  </ListItem>
+                  <Divider />
+                </React.Fragment>
+              ))}
+            </List>
+          ) : (
+            <Box sx={{ textAlign: 'center', py: isExtraSmallScreen ? 3 : 5 }}>
+              <Typography 
+                color="text.secondary"
+                sx={{ fontSize: isExtraSmallScreen ? '0.75rem' : undefined }}
+              >
+                No upcoming tasks
               </Typography>
-              <Typography component="span" variant="body2" display="block">
-                Completed: {format(new Date(task.updatedAt || task.createdAt), 'PPp')}
+            </Box>
+          )}
+        </Paper>
+      </Grid>
+      
+      {/* Recently Completed Tasks */}
+      <Grid item xs={12} md={12}>
+        <Paper sx={{ 
+          p: { xs: isExtraSmallScreen ? 0.75 : 1, sm: 2 }, 
+          mt: { xs: isExtraSmallScreen ? 0.5 : 1, sm: 3 } 
+        }}>
+          <Typography 
+            variant={isExtraSmallScreen ? "subtitle1" : "h6"} 
+            sx={{ 
+              mb: { xs: isExtraSmallScreen ? 0.5 : 1, sm: 2 },
+              fontSize: isExtraSmallScreen ? '1rem' : undefined
+            }}
+          >
+            Recently Completed Tasks
+          </Typography>
+          {recentlyCompleted.length > 0 ? (
+            <List sx={{ 
+              '& .MuiListItem-root': { 
+                py: isExtraSmallScreen ? 0.5 : 1,
+                px: isExtraSmallScreen ? 1 : 2
+              } 
+            }}>
+              {recentlyCompleted.map((task) => (
+                <React.Fragment key={task._id}>
+                  <ListItem>
+                    <ListItemText
+                      primary={
+                        <Typography 
+                          variant={isExtraSmallScreen ? "body2" : "body1"}
+                          sx={{ fontWeight: 500 }}
+                        >
+                          {task.title}
+                        </Typography>
+                      }
+                      secondary={
+                        <>
+                          <Typography 
+                            component="span" 
+                            variant="body2" 
+                            color="text.primary"
+                            sx={{ fontSize: isExtraSmallScreen ? '0.7rem' : undefined }}
+                          >
+                            {/* Trim description more aggressively on small screens */}
+                            {task.description.substring(0, isExtraSmallScreen ? 30 : 60)}
+                            {task.description.length > (isExtraSmallScreen ? 30 : 60) ? '...' : ''}
+                          </Typography>
+                          <Typography 
+                            component="span" 
+                            variant="body2" 
+                            display="block"
+                            sx={{ fontSize: isExtraSmallScreen ? '0.7rem' : undefined }}
+                          >
+                            Completed: {format(new Date(task.updatedAt || task.createdAt), isExtraSmallScreen ? 'PP' : 'PPp')}
+                          </Typography>
+                        </>
+                      }
+                    />
+                    <Chip 
+                      label="Completed" 
+                      size="small" 
+                      color="success" 
+                      sx={{ fontSize: isExtraSmallScreen ? '0.6rem' : undefined, height: isExtraSmallScreen ? 20 : 24 }}
+                    />
+                  </ListItem>
+                  <Divider />
+                </React.Fragment>
+              ))}
+            </List>
+          ) : (
+            <Box sx={{ textAlign: 'center', py: isExtraSmallScreen ? 3 : 5 }}>
+              <Typography 
+                color="text.secondary"
+                sx={{ fontSize: isExtraSmallScreen ? '0.75rem' : undefined }}
+              >
+                No completed tasks
               </Typography>
-              </>
-            }
-            />
-            <Chip label="Completed" size="small" color="success" />
-          </ListItem>
-          <Divider />
-          </React.Fragment>
-        ))}
-        </List>
-      ) : (
-        <Box sx={{ textAlign: 'center', py: 5 }}>
-        <Typography color="text.secondary">No completed tasks</Typography>
-        </Box>
-      )}
-      </Paper>
-    </Grid>
+            </Box>
+          )}
+        </Paper>
+      </Grid>
     </Grid>
   </Box>
   );
